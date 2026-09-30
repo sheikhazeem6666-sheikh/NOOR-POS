@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Karachi Noor Biryani & Murgh Pulao - Single File POS & Business App</title>
+  <style>
+    :root {
+      --primary: #d97706; --primary-dark: #b45309; --primary-light: #fef3c7;
+      --slate-900: #0f172a; --slate-800: #1e293b; --slate-700: #334155;
+      --slate-600: #475569; --slate-500: #64748b; --slate-200: #e2e8f0;
+      --slate-100: #f1f5f9; --slate-50: #f8fafc; --emerald: #059669; --rose: #e11d48;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, sans-serif; background: #f8fafc; color: #0f172a; line-height: 1.5; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 12px 16px; }
+    .card { background: #fff; border: 1px solid var(--slate-200); border-radius: 14px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 14px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer; border: none; transition: 0.15s; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-dark { background: var(--slate-900); color: #fff; }
+    .btn-outline { background: #fff; border: 1px solid #cbd5e1; color: #334155; }
+    .btn-sm { padding: 4px 8px; font-size: 11px; }
+    .badge { padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; display: inline-block; }
+    .badge-delivered { background: #d1fae5; color: #065f46; }
+    .badge-dispatched { background: #ede9fe; color: #5b21b6; }
+    .badge-preparing { background: #dbeafe; color: #1e40af; }
+    .badge-pending { background: #fef3c7; color: #92400e; }
+    .nav-tabs { display: flex; gap: 6px; overflow-x: auto; padding: 10px 0; border-bottom: 1px solid #e2e8f0; }
+    .nav-btn { padding: 8px 14px; border-radius: 8px; border: none; background: transparent; font-weight: 600; font-size: 12px; cursor: pointer; white-space: nowrap; color: #475569; }
+    .nav-btn.active { background: #0f172a; color: #fff; }
+    .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; }
+    th { background: #f8fafc; padding: 10px; border-bottom: 1px solid #e2e8f0; font-size: 11px; color: #64748b; }
+    td { padding: 10px; border-bottom: 1px solid #f1f5f9; }
+    .input { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 12px; outline: none; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
+    .modal-overlay.open { display: flex; }
+    .modal-content { background: #fff; border-radius: 16px; width: 100%; max-width: 480px; padding: 20px; max-height: 90vh; overflow-y: auto; }
+    @media print {
+      body * { visibility: hidden; }
+      #printable-receipt, #printable-receipt * { visibility: visible; }
+      #printable-receipt { position: absolute; left: 0; top: 0; width: 80mm; padding: 8px; font-family: monospace; font-size: 11px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Top Bar -->
+  <header style="background: #fff; border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; z-index: 50;">
+    <div class="container" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 16px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="background: #d97706; color: #fff; font-weight: 800; padding: 6px 10px; border-radius: 8px; font-size: 14px;">NB</div>
+        <div>
+          <div style="font-weight: 800; font-size: 15px;">Karachi Noor Biryani & Murgh Pulao</div>
+          <div style="font-size: 11px; color: #64748b;">Saidpur Road Rawalpindi · Main Branch (Pandora Chungi)</div>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <select id="branch-select" class="input" style="width: auto; font-weight: 600;" onchange="switchBranch(this.value)">
+          <option value="b1">Main Branch - Saidpur Road</option>
+          <option value="b2">Branch 2 - Commercial Market</option>
+          <option value="b3">Branch 3 - Dhok Kala Khan</option>
+        </select>
+        <button class="btn btn-outline btn-sm" onclick="openModal('addBranchModal')">+ Branch</button>
+      </div>
+    </div>
+    <div class="container" style="padding-top: 0;">
+      <nav class="nav-tabs">
+        <button class="nav-btn active" id="btn-dashboard" onclick="setTab('dashboard')">📊 Owner Dashboard</button>
+        <button class="nav-btn" id="btn-customer" onclick="setTab('customer')">📱 Customer App</button>
+        <button class="nav-btn" id="btn-pos" onclick="setTab('pos')">🧾 POS Billing</button>
+        <button class="nav-btn" id="btn-stock" onclick="setTab('stock')">📦 Stock & Inventory</button>
+        <button class="nav-btn" id="btn-khata" onclick="setTab('khata')">📒 Khata System</button>
+        <button class="nav-btn" id="btn-reports" onclick="setTab('reports')">📈 Reports & Analytics</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Container for App Views -->
+  <main class="container" style="padding-top: 16px; padding-bottom: 40px;">
+    <!-- VIEW 1: OWNER DASHBOARD -->
+    <div id="view-dashboard" class="tab-view"></div>
+
+    <!-- VIEW 2: CUSTOMER APP -->
+    <div id="view-customer" class="tab-view" style="display: none;"></div>
+
+    <!-- VIEW 3: POS SCREEN -->
+    <div id="view-pos" class="tab-view" style="display: none;"></div>
+
+    <!-- VIEW 4: STOCK MANAGEMENT -->
+    <div id="view-stock" class="tab-view" style="display: none;"></div>
+
+    <!-- VIEW 5: KHATA SYSTEM -->
+    <div id="view-khata" class="tab-view" style="display: none;"></div>
+
+    <!-- VIEW 6: REPORTS SCREEN -->
+    <div id="view-reports" class="tab-view" style="display: none;"></div>
+  </main>
+
+  <!-- Modals & Print Area -->
+  <div id="printable-receipt" style="display: none;"></div>
+  <div id="modals-root"></div>
+
+  <!-- Inline Application Logic (No external build step needed!) -->
+  <script>
+    // Initial State Pre-seeded with Saidpur Road Rawalpindi Data
+    const STORAGE_KEY = 'noor_biryani_standalone_v1';
+    let appData = loadData();
+
+    function loadData() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try { return JSON.parse(saved); } catch(e) {}
+      }
+      return getDefaultData();
+    }
+
+    function saveData() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+    }
+
+    function getDefaultData() {
+      return {
+        activeBranch: 'b1',
+        branches: [
+          { id: 'b1', name: 'Main Branch - Saidpur Road', address: 'Near Pandora Chungi, Saidpur Rd RWP', phone: '051-4852341' },
+          { id: 'b2', name: 'Branch 2 - Commercial Market', address: 'Satellite Town Rawalpindi', phone: '051-4841920' },
+          { id: 'b3', name: 'Branch 3 - Dhok Kala Khan', address: 'Near Shamsabad Metro, Murree Rd', phone: '051-4927514' }
+        ],
+        riders: [
+          { id: 'r1', name: 'Kamran Khan', phone: '0312-5847192', bike: 'Honda 125', status: 'delivering', area: 'Pandora Chungi', speed: 32, battery: 85 },
+          { id: 'r2', name: 'Usman Ali', phone: '0304-9123847', bike: 'Yamaha YBR', status: 'delivering', area: 'Dhok Kala Khan', speed: 28, battery: 78 },
+          { id: 'r3', name: 'Bilal Ahmed', phone: '0333-5481029', bike: 'Road Prince', status: 'available', area: 'Saidpur Road Main', speed: 0, battery: 94 }
+        ],
+        menu: [
+          { id: 'm1', name: 'Noor Special Chicken Biryani', nameUrdu: 'نور اسپیشل چکن بریانی', cat: 'biryani', price: 450, cost: 260, single: 450, double: 750, daig: 16500 },
+          { id: 'm2', name: 'Karachi Special Beef Biryani', nameUrdu: 'کراچی اسپیشل بیف بریانی', cat: 'biryani', price: 600, cost: 350, single: 600, double: 1050, daig: 22000 },
+          { id: 'm3', name: 'Degi Murgh Pulao', nameUrdu: 'دیگی مرغ پلاؤ', cat: 'pulao', price: 420, cost: 240, single: 420, double: 720, daig: 15500 },
+          { id: 'm4', name: 'Shinwari Chicken Karahi', nameUrdu: 'شنواری چکن کڑاہی', cat: 'karahi', price: 950, cost: 580, single: 950, double: 1750, daig: 0 },
+          { id: 'm5', name: 'Special Chicken Shami Kabab', nameUrdu: 'شامی کباب', cat: 'sides', price: 90, cost: 45, single: 90, double: 340, daig: 0 },
+          { id: 'm6', name: 'Zeera Pudina Raita', nameUrdu: 'زیرہ پودینہ رائتہ', cat: 'sides', price: 60, cost: 25, single: 60, double: 60, daig: 0 },
+          { id: 'm7', name: 'Fresh Kachumber Salad', nameUrdu: 'تازہ کچومر سلاد', cat: 'sides', price: 60, cost: 20, single: 60, double: 60, daig: 0 },
+          { id: 'm8', name: 'Special Zafrani Kheer', nameUrdu: 'زعفرانی کھیر', cat: 'drinks', price: 120, cost: 65, single: 120, double: 120, daig: 0 },
+          { id: 'm9', name: 'Cold Drinks (Pakola/Coke)', nameUrdu: 'کولڈ ڈرنک', cat: 'drinks', price: 120, cost: 95, single: 120, double: 240, daig: 0 }
+        ],
+        orders: [
+          { id: 'ord-1001', num: 'ORD-1001', name: 'Chaudhry Arshad', phone: '0300-5123984', addr: 'Pandora Chungi, House 42', area: 'Pandora', amount: 1960, status: 'delivered', rider: 'Kamran Khan' },
+          { id: 'ord-1002', num: 'ORD-1002', name: 'Asghar Mall College Canteen', phone: '0321-9541230', addr: 'Asghar Mall Road RWP', area: 'Saidpur Road', amount: 5350, status: 'delivered', rider: '' },
+          { id: 'ord-1003', num: 'ORD-1003', name: 'Sardar Waheed', phone: '0345-5678129', addr: 'Dhok Kala Khan, St 3', area: 'Dhok Kala Khan', amount: 2440, status: 'delivered', rider: 'Usman Ali' },
+          { id: 'ord-1004', num: 'ORD-1004', name: 'Haji Gulzar Ahmed', phone: '0313-5241098', addr: 'Saidpur Road Market', area: 'Saidpur Road', amount: 2600, status: 'delivered', rider: '' },
+          { id: 'ord-1005', num: 'ORD-1005', name: 'Raja Zubair Wedding Hall', phone: '0302-8819203', addr: 'Satellite Town 6th Rd', area: 'Satellite Town', amount: 16500, status: 'delivered', rider: '' },
+          { id: 'ord-1006', num: 'ORD-1006', name: 'Engr. Noman Sheikh', phone: '0331-5092837', addr: 'Commercial Market, Plaza 3', area: 'Commercial Market', amount: 2440, status: 'delivered', rider: '' },
+          { id: 'ord-1007', num: 'ORD-1007', name: 'Mian Farooq', phone: '0301-4433221', addr: 'Dhok Kala Khan, Gulshan St', area: 'Dhok Kala Khan', amount: 2260, status: 'delivered', rider: '' },
+          { id: 'ord-1008', num: 'ORD-1008', name: 'Tariq Electronics Staff', phone: '0315-7788990', addr: 'Murree Road near Shamsabad', area: 'Shamsabad', amount: 2400, status: 'delivered', rider: '' },
+          { id: 'ord-1009', num: 'ORD-1009', name: 'Malik Sons Textile Pandora', phone: '0300-9871234', addr: 'Saidpur Road near Pandora', area: 'Pandora', amount: 2510, status: 'delivered', rider: '' },
+          { id: 'ord-1010', num: 'ORD-1010', name: 'Qasim Ali Advocate', phone: '0322-6655443', addr: 'Chaudhry Market Saidpur Rd', area: 'Saidpur Road', amount: 2250, status: 'delivered', rider: '' },
+          { id: 'ord-1011', num: 'ORD-1011', name: 'Hafiz Bilal', phone: '0346-1122334', addr: 'Dhok Kala Khan, St 11', area: 'Dhok Kala Khan', amount: 1810, status: 'delivered', rider: '' },
+          { id: 'ord-1012', num: 'ORD-1012', name: 'Dr. Ayesha Clinic', phone: '0303-9988776', addr: 'Satellite Town Block C', area: 'Satellite Town', amount: 2140, status: 'delivered', rider: '' },
+          { id: 'ord-1013', num: 'ORD-1013', name: 'Babu Mohallah Resident', phone: '0311-2233445', addr: 'Saidpur Road Babu Mohallah', area: 'Saidpur Road', amount: 1400, status: 'delivered', rider: '' },
+          { id: 'ord-1014', num: 'ORD-1014', name: 'Khurram Shehzad', phone: '0334-7766554', addr: 'Pandora near Shell Pump', area: 'Pandora', amount: 1400, status: 'delivered', rider: '' },
+          { id: 'ord-1015', num: 'ORD-1015', name: 'Rawalpindi Metro Staff', phone: '0305-6677889', addr: 'Shamsabad Metro Office', area: 'Shamsabad', amount: 2640, status: 'delivered', rider: '' },
+          { id: 'ord-1016', num: 'ORD-1016', name: 'Zahid Autos Pandora', phone: '0300-3344556', addr: 'Saidpur Road Workshop', area: 'Pandora', amount: 2000, status: 'delivered', rider: '' },
+          { id: 'ord-1017', num: 'ORD-1017', name: 'Imtiaz Ahmed Family', phone: '0321-7788112', addr: 'Dhok Kala Khan Main Gali', area: 'Dhok Kala Khan', amount: 2720, status: 'delivered', rider: '' },
+          { id: 'ord-1018', num: 'ORD-1018', name: 'Sufi Kashif', phone: '0342-9988110', addr: 'Commercial Market', area: 'Commercial Market', amount: 1860, status: 'delivered', rider: '' },
+          { id: 'ord-1019', num: 'ORD-1019', name: 'Farhan & Brothers', phone: '0314-5544332', addr: 'Saidpur Road Asghar Mall', area: 'Saidpur Road', amount: 2300, status: 'delivered', rider: '' },
+          { id: 'ord-1020', num: 'ORD-1020', name: 'Rao Nadeem', phone: '0306-1199228', addr: 'Dhok Kala Khan, St 15', area: 'Dhok Kala Khan', amount: 1810, status: 'delivered', rider: '' },
+          // Live orders
+          { id: 'ord-1021', num: 'ORD-1021', name: 'Malik Zeeshan', phone: '0300-5896321', addr: 'St 4, Near Pandora Water Tank', area: 'Pandora', amount: 2140, status: 'dispatched', rider: 'Kamran Khan' },
+          { id: 'ord-1022', num: 'ORD-1022', name: 'Hassan Raza', phone: '0332-9845123', addr: 'Saidpur Road near Pandora', area: 'Saidpur Road', amount: 1770, status: 'preparing', rider: '' },
+          { id: 'ord-1023', num: 'ORD-1023', name: 'Dr. Shahzad Tariq', phone: '0300-8451209', addr: 'House 18, St 7, Dhok Kala Khan', area: 'Dhok Kala Khan', amount: 1910, status: 'dispatched', rider: 'Usman Ali' },
+          { id: 'ord-1024', num: 'ORD-1024', name: 'Ali Asad Advocate', phone: '0313-9874561', addr: 'Opposite Pandora Petrol Pump', area: 'Pandora', amount: 1520, status: 'pending', rider: '' }
+        ],
+        stock: [
+          { id: 's1', name: 'Super Kainat Basmati Rice', unit: 'KG', qty: 65, min: 100, cost: 340, supplier: 'Al-Madina Rice Traders' },
+          { id: 's2', name: 'Fresh Halal Broiler Chicken', unit: 'KG', qty: 42, min: 30, cost: 490, supplier: 'Pandora Poultry Supply' },
+          { id: 's3', name: 'Veal / Beef Boti', unit: 'KG', qty: 28, min: 20, cost: 980, supplier: 'Haji Sharif Meat Merchant' },
+          { id: 's4', name: 'Habib Banaspati Ghee (16L Tins)', unit: 'Tins', qty: 4, min: 5, cost: 8200, supplier: 'City Wholesale Oil' },
+          { id: 's5', name: 'Karachi Biryani Masala & Zafran', unit: 'KG', qty: 18, min: 10, cost: 850, supplier: 'Rawal Spices Raja Bazar' },
+          { id: 's6', name: 'Takeaway Foil Boxes', unit: 'Boxes', qty: 150, min: 300, cost: 18, supplier: 'Iqbal Packaging Pandora' },
+          { id: 's7', name: 'Commercial LPG Cylinder 45KG', unit: 'Cylinders', qty: 3, min: 2, cost: 13500, supplier: 'Chaudhry Gas Agency' }
+        ],
+        suppliers: [
+          { id: 'sup1', name: 'Al-Madina Rice Traders', contact: 'Chaudhry Akram', phone: '0300-5112233', items: 'Kainat Rice (50KG)', udhar: 280000, jama: 210000, baqaya: 70000 },
+          { id: 'sup2', name: 'Pandora Poultry Supply Saidpur Rd', contact: 'Bhai Jahangir', phone: '0313-5566778', items: 'Cleaned Broiler Chicken', udhar: 185000, jama: 155000, baqaya: 30000 },
+          { id: 'sup3', name: 'Haji Sharif Meat Merchant', contact: 'Haji Sharif', phone: '0321-9988771', items: 'Veal & Beef Boti', udhar: 145000, jama: 120000, baqaya: 25000 },
+          { id: 'sup4', name: 'City Wholesale Oil & Ghee Depot', contact: 'Malik Tahir', phone: '0345-4433221', items: 'Habib Banaspati Ghee', udhar: 98400, jama: 82000, baqaya: 16400 }
+        ],
+        customers: [
+          { id: 'c1', name: 'Asghar Mall College Canteen', phone: '0321-9541230', area: 'Saidpur Road', udhar: 48500, jama: 32000, baqaya: 16500 },
+          { id: 'c2', name: 'Malik Sons Textile Pandora', phone: '0300-9871234', area: 'Pandora Chungi', udhar: 28900, jama: 20000, baqaya: 8900 },
+          { id: 'c3', name: 'Zahid Autos Workshop', phone: '0300-3344556', area: 'Saidpur Road', udhar: 18400, jama: 12000, baqaya: 6400 },
+          { id: 'c4', name: 'Rawal Medicos Saidpur Road', phone: '0333-8822119', area: 'Saidpur Road', udhar: 14200, jama: 14200, baqaya: 0 }
+        ],
+        roznamcha: [
+          { time: '10:00 AM', desc: 'Opening Cash Float (آغاز کیش دراز)', type: 'aamad', amount: 15000, cat: 'Float' },
+          { time: '10:45 AM', desc: 'Pandora Poultry Farm Daily Chicken 45KG', type: 'kharch', amount: 22050, cat: 'Chicken' },
+          { time: '11:30 AM', desc: 'Commercial Gas Cylinder Refill', type: 'kharch', amount: 13500, cat: 'Gas' },
+          { time: '01:15 PM', desc: 'Morning POS Counter Cash Inflow', type: 'aamad', amount: 38200, cat: 'Sales' },
+          { time: '03:30 PM', desc: 'Fresh Onion, Tomato, Green Chili Mandi', type: 'kharch', amount: 4200, cat: 'Groceries' },
+          { time: '04:00 PM', desc: 'Daily wages / dehari for kitchen staff', type: 'kharch', amount: 3500, cat: 'Wages' },
+          { time: '05:30 PM', desc: 'Evening Dine-in & Takeaway Cash Inflow', type: 'aamad', amount: 29200, cat: 'Sales' }
+        ],
+        monthly: [
+          { month: 'Jan', sales: 1420000, profit: 568000, orders: 540 },
+          { month: 'Feb', sales: 1580000, profit: 632000, orders: 590 },
+          { month: 'Mar (Ramadan)', sales: 2150000, profit: 881500, orders: 780 },
+          { month: 'Apr (Eid)', sales: 2380000, profit: 999600, orders: 840 },
+          { month: 'May', sales: 1720000, profit: 705200, orders: 630 },
+          { month: 'Jun', sales: 1890000, profit: 774900, orders: 690 },
+          { month: 'Jul (Bakra Eid)', sales: 2450000, profit: 1029000, orders: 890 },
+          { month: 'Aug', sales: 1810000, profit: 742100, orders: 660 },
+          { month: 'Sep (Current)', sales: 2022000, profit: 829020, orders: 742 }
+        ]
+      };
+    }
+
+    // Tab Switching
+    function setTab(tabId) {
+      document.querySelectorAll('.tab-view').forEach(v => v.style.display = 'none');
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      const activeBtn = document.getElementById('btn-' + tabId);
+      if (activeBtn) activeBtn.classList.add('active');
+      const activeView = document.getElementById('view-' + tabId);
+      if (activeView) activeView.style.display = 'block';
+
+      if (tabId === 'dashboard') renderDashboard();
+      else if (tabId === 'customer') renderCustomer();
+      else if (tabId === 'pos') renderPOS();
+      else if (tabId === 'stock') renderStock();
+      else if (tabId === 'khata') renderKhata();
+      else if (tabId === 'reports') renderReports();
+    }
+
+    // 1. RENDER OWNER DASHBOARD
+    function renderDashboard() {
+      const orders = appData.orders;
+      const totalSales = orders.reduce((s, o) => s + o.amount, 0);
+      const avgOrder = orders.length > 0 ? Math.round(totalSales / orders.length) : 0;
+      const activeRiders = appData.riders.filter(r => r.status !== 'offline').length;
+
+      let html = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <div>
+            <h1 style="font-size: 20px; font-weight: 800;">Owner Dashboard · ایڈمن پینل</h1>
+            <p style="font-size: 12px; color: #64748b;">Karachi Noor Biryani & Murgh Pulao · Saidpur Road Rawalpindi</p>
+          </div>
+          <button class="btn btn-primary" onclick="setTab('pos')">🧾 New POS Bill</button>
+        </div>
+
+        <!-- 4 KPI Header Cards (As requested: 24 orders, 67,400 PKR, avg 2,808 PKR, 3 riders) -->
+        <div class="grid-4" style="margin-bottom: 16px;">
+          <div class="card">
+            <div style="font-size: 11px; font-weight: 700; color: #64748b;">TODAY'S ORDERS</div>
+            <div style="font-size: 28px; font-weight: 800; margin: 4px 0;">${orders.length}</div>
+            <div style="font-size: 11px; color: #059669; font-weight: 600;">+14% vs yesterday · 20 Delivered</div>
+          </div>
+          <div class="card">
+            <div style="font-size: 11px; font-weight: 700; color: #64748b;">TODAY'S SALE (PKR)</div>
+            <div style="font-size: 28px; font-weight: 800; margin: 4px 0; color: #d97706;">${totalSales.toLocaleString()}</div>
+            <div style="font-size: 11px; color: #64748b;">Est. Profit: PKR ${Math.round(totalSales * 0.41).toLocaleString()}</div>
+          </div>
+          <div class="card">
+            <div style="font-size: 11px; font-weight: 700; color: #64748b;">AVERAGE ORDER (PKR)</div>
+            <div style="font-size: 28px; font-weight: 800; margin: 4px 0;">${avgOrder.toLocaleString()}</div>
+            <div style="font-size: 11px; color: #64748b;">High daig orders included</div>
+          </div>
+          <div class="card">
+            <div style="font-size: 11px; font-weight: 700; color: #64748b;">ACTIVE RIDERS</div>
+            <div style="font-size: 28px; font-weight: 800; margin: 4px 0; color: #059669;">${activeRiders}</div>
+            <div style="font-size: 11px; color: #64748b;">Pandora · Dhok Kala Khan</div>
+          </div>
+        </div>
+
+        <!-- Saidpur Road Live Rider Tracking Map -->
+        <div class="card" style="margin-bottom: 20px; background: #090d16; color: #fff; padding: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <div style="font-weight: 700; font-size: 13px;">🗺️ Saidpur Road & Pandora Live Rider Tracking Map</div>
+            <span class="badge" style="background: rgba(16,185,129,0.2); color: #34d399;">3 RIDERS LIVE</span>
+          </div>
+          <div style="position: relative; width: 100%; height: 220px; background: #050811; border-radius: 10px; overflow: hidden; border: 1px solid #1e293b;">
+            <svg viewBox="0 0 700 220" style="width: 100%; height: 100%;">
+              <!-- Road corridors -->
+              <path d="M 240 20 L 320 110 L 390 200" stroke="#334155" stroke-width="14" fill="none" />
+              <path d="M 240 20 L 320 110 L 390 200" stroke="#f59e0b" stroke-width="2" stroke-dasharray="6 4" fill="none" />
+              <path d="M 120 110 L 520 110" stroke="#1e293b" stroke-width="10" fill="none" />
+              <path d="M 320 110 L 480 80 L 620 90" stroke="#334155" stroke-width="8" fill="none" />
+              <text x="330" y="160" fill="#64748b" font-size="10" font-weight="bold">SAIDPUR ROAD (سید پور روڈ)</text>
+              <text x="140" y="95" fill="#94a3b8" font-size="10" font-weight="bold">PANDORA (پنڈورا)</text>
+              <text x="500" y="80" fill="#94a3b8" font-size="10" font-weight="bold">DHOK KALA KHAN (ڈھوک کالا خان)</text>
+
+              <!-- Main Branch -->
+              <circle cx="320" cy="110" r="10" fill="#f59e0b" stroke="#fff" stroke-width="2" />
+              <text x="320" y="90" fill="#fef08a" font-size="9" font-weight="bold" text-anchor="middle">★ NOOR BIRYANI MAIN</text>
+
+              <!-- Riders -->
+              <g transform="translate(260, 80)">
+                <circle r="8" fill="#38bdf8" stroke="#fff" stroke-width="1.5" />
+                <text x="0" y="-12" fill="#38bdf8" font-size="9" font-weight="bold" text-anchor="middle">Kamran (32 km/h)</text>
+              </g>
+              <g transform="translate(480, 85)">
+                <circle r="8" fill="#38bdf8" stroke="#fff" stroke-width="1.5" />
+                <text x="0" y="-12" fill="#38bdf8" font-size="9" font-weight="bold" text-anchor="middle">Usman (28 km/h)</text>
+              </g>
+              <g transform="translate(320, 130)">
+                <circle r="8" fill="#10b981" stroke="#fff" stroke-width="1.5" />
+                <text x="0" y="18" fill="#34d399" font-size="9" font-weight="bold" text-anchor="middle">Bilal (Available)</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Live Orders Table -->
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <div style="font-weight: 800; font-size: 14px;">Live Orders Queue / لائیو آرڈرز فہرست</div>
+            <div style="font-size: 11px; color: #64748b;">Showing ${orders.length} orders</div>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Order ID</th>
+                  <th>Customer & Phone</th>
+                  <th>Address & Area</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th style="text-align: right;">Action Buttons</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${orders.map(o => `
+                  <tr>
+                    <td style="font-weight: 700;">${o.num}</td>
+                    <td><b>${o.name}</b><br><span style="color: #64748b;">${o.phone}</span></td>
+                    <td>${o.addr}<br><span class="badge" style="background: #f1f5f9; color: #475569;">${o.area}</span></td>
+                    <td style="font-weight: 800; color: #d97706;">PKR ${o.amount.toLocaleString()}</td>
+                    <td><span class="badge badge-${o.status}">${o.status}</span></td>
+                    <td style="text-align: right;">
+                      <div style="display: inline-flex; gap: 4px;">
+                        ${o.status !== 'delivered' ? `<button class="btn btn-sm btn-primary" onclick="assignRiderPrompt('${o.id}')">Rider Bhejo</button>` : ''}
+                        ${o.status === 'dispatched' ? `<button class="btn btn-sm btn-outline" onclick="alert('Rider currently at ${o.area} on Saidpur Road')">Track Karo</button>` : ''}
+                        ${o.status !== 'delivered' ? `<button class="btn btn-sm btn-success" onclick="completeOrder('${o.id}')">Complete</button>` : ''}
+                        <button class="btn btn-sm btn-outline" onclick="printReceipt('${o.id}')">Slip</button>
+                      </div>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+      document.getElementById('view-dashboard').innerHTML = html;
+    }
+
+    // 2. RENDER CUSTOMER APP
+    let customerCart = [];
+    function renderCustomer() {
+      const menu = appData.menu;
+      let html = `
+        <div style="background: linear-gradient(135deg, #78350f, #0f172a); color: #fff; padding: 24px; border-radius: 16px; margin-bottom: 20px;">
+          <div class="badge" style="background: rgba(245,158,11,0.2); color: #fde047; margin-bottom: 8px;">کراچی نور بریانی اینڈ مرغ پلاؤ</div>
+          <h1 style="font-size: 24px; font-weight: 800;">Order Fresh Degi Biryani & Murgh Pulao Online</h1>
+          <p style="font-size: 12px; color: #cbd5e1; margin-top: 4px;">Fast delivery in Pandora, Dhok Kala Khan, Saidpur Road & Satellite Town Rawalpindi.</p>
+        </div>
+
+        <div class="grid-3" style="margin-bottom: 30px;">
+          ${menu.map(item => `
+            <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+              <div>
+                <div style="font-weight: 800; font-size: 15px;">${item.name}</div>
+                <div style="font-size: 13px; color: #b45309; font-weight: bold; margin-bottom: 6px;">${item.nameUrdu}</div>
+                <div style="font-size: 16px; font-weight: 800; color: #0f172a; margin-bottom: 12px;">PKR ${item.price.toLocaleString()}</div>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <select id="portion-${item.id}" class="input" style="width: 60%; font-size: 11px;">
+                  <option value="${item.single}">Single Plate (PKR ${item.single})</option>
+                  <option value="${item.double}">Double Plate (PKR ${item.double})</option>
+                  ${item.daig > 0 ? `<option value="${item.daig}">Full Daig (PKR ${item.daig})</option>` : ''}
+                </select>
+                <button class="btn btn-dark" style="flex: 1;" onclick="addToCart('${item.id}')">+ Cart</button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+
+        <!-- Cart Checkout Drawer Area -->
+        <div class="card" style="border: 2px solid var(--primary); background: #fffbeb;">
+          <h3 style="font-weight: 800; font-size: 16px; margin-bottom: 10px;">🛒 Your Ordering Cart</h3>
+          <div id="cart-list" style="margin-bottom: 14px;">
+            ${customerCart.length === 0 ? '<div style="color: #64748b; font-size: 12px;">Cart is empty. Click "+ Cart" above to order.</div>' : ''}
+            ${customerCart.map((c, i) => `
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px dashed #cbd5e1; font-size: 12px;">
+                <div><b>${c.name}</b> (${c.portion}) x ${c.qty}</div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <b>PKR ${(c.price * c.qty).toLocaleString()}</b>
+                  <button class="btn btn-sm btn-outline" onclick="removeCartItem(${i})">✕</button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+
+          ${customerCart.length > 0 ? `
+            <div style="padding-top: 10px; border-top: 1px solid #cbd5e1; margin-bottom: 14px;">
+              <div style="font-size: 15px; font-weight: 800; display: flex; justify-content: space-between;">
+                <span>Total Amount:</span>
+                <span style="color: #b45309;">PKR ${customerCart.reduce((s, it) => s + it.price * it.qty, 0).toLocaleString()}</span>
+              </div>
+            </div>
+            <div class="grid-2" style="margin-bottom: 14px;">
+              <div>
+                <label style="font-size: 11px; font-weight: 700;">Customer Name</label>
+                <input id="cust-name" class="input" placeholder="e.g. Sheikh Azeem" required>
+              </div>
+              <div>
+                <label style="font-size: 11px; font-weight: 700;">Mobile Phone</label>
+                <input id="cust-phone" class="input" placeholder="0300-1234567" required>
+              </div>
+            </div>
+            <div style="margin-bottom: 14px;">
+              <label style="font-size: 11px; font-weight: 700;">Delivery Address in Rawalpindi</label>
+              <input id="cust-addr" class="input" placeholder="Street 4, Near Pandora Water Tank" required>
+            </div>
+            <div style="display: flex; gap: 8px; margin-bottom: 14px;">
+              <label><input type="radio" name="pay" value="cod" checked> Cash on Delivery (COD)</label>
+              <label><input type="radio" name="pay" value="jazzcash"> JazzCash / EasyPaisa</label>
+            </div>
+            <button class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 14px;" onclick="placeCustomerOrder()">Place Order / آرڈر بھیجیں</button>
+          ` : ''}
+        </div>
+      `;
+      document.getElementById('view-customer').innerHTML = html;
+    }
+
+    function addToCart(itemId) {
+      const item = appData.menu.find(m => m.id === itemId);
+      const sel = document.getElementById('portion-' + itemId);
+      const price = Number(sel.value);
+      const portionText = sel.options[sel.selectedIndex].text.split('(')[0];
+      customerCart.push({ id: item.id, name: item.name, price: price, portion: portionText, qty: 1 });
+      renderCustomer();
+    }
+
+    function removeCartItem(idx) {
+      customerCart.splice(idx, 1);
+      renderCustomer();
+    }
+
+    function placeCustomerOrder() {
+      const name = document.getElementById('cust-name').value;
+      const phone = document.getElementById('cust-phone').value;
+      const addr = document.getElementById('cust-addr').value;
+      if (!name || !phone || !addr) { alert('Please enter Name, Phone and Address'); return; }
+      const total = customerCart.reduce((s, it) => s + it.price * it.qty, 0);
+      const newOrd = {
+        id: 'ord-' + Date.now(),
+        num: 'ORD-' + (1000 + appData.orders.length + 1),
+        name: name,
+        phone: phone,
+        addr: addr,
+        area: 'Pandora / Saidpur Rd',
+        amount: total,
+        status: 'pending',
+        rider: ''
+      };
+      appData.orders.unshift(newOrd);
+      saveData();
+      customerCart = [];
+      alert('Order Placed Successfully! Your Order No is ' + newOrd.num);
+      setTab('dashboard');
+    }
+
+    // 3. RENDER POS SCREEN
+    let posTicket = [];
+    function renderPOS() {
+      const total = posTicket.reduce((s, it) => s + it.price * it.qty, 0);
+      let html = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <div>
+            <h1 style="font-size: 20px; font-weight: 800;">POS Billing Screen · کاؤنٹر بلنگ</h1>
+            <p style="font-size: 12px; color: #64748b;">Fast touch counter terminal with auto price calculation</p>
+          </div>
+        </div>
+        <div class="grid-2" style="align-items: start;">
+          <!-- Menu Items on Counter -->
+          <div class="card">
+            <h3 style="font-size: 14px; font-weight: 800; margin-bottom: 12px;">Select Food Items</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px;">
+              ${appData.menu.map(m => `
+                <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; cursor: pointer; text-align: center; background: #fff;" onclick="addPosItem('${m.id}', '${m.name}', ${m.price})">
+                  <div style="font-weight: 700; font-size: 12px;">${m.name}</div>
+                  <div style="font-size: 11px; color: #b45309; font-weight: 600;">${m.nameUrdu}</div>
+                  <div style="font-weight: 800; color: #0f172a; margin-top: 4px;">PKR ${m.price}</div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+
+          <!-- Active Ticket on Counter -->
+          <div class="card" style="border: 2px solid #0f172a;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <h3 style="font-size: 14px; font-weight: 800;">Bill Ticket (کل بل)</h3>
+              <button class="btn btn-sm btn-outline" onclick="posTicket = []; renderPOS();">Clear</button>
+            </div>
+            <div style="min-height: 140px; margin-bottom: 14px;">
+              ${posTicket.length === 0 ? '<div style="color: #94a3b8; font-size: 12px; padding: 20px 0; text-align: center;">Click items on the left to add to bill</div>' : ''}
+              ${posTicket.map((it, i) => `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #f1f5f9; font-size: 12px;">
+                  <div><b>${it.name}</b> x ${it.qty}</div>
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <b>PKR ${(it.price * it.qty).toLocaleString()}</b>
+                    <button class="btn btn-sm btn-outline" onclick="changePosQty(${i}, -1)">-</button>
+                    <button class="btn btn-sm btn-outline" onclick="changePosQty(${i}, 1)">+</button>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+            <div style="border-top: 2px solid #0f172a; padding-top: 10px; margin-bottom: 14px;">
+              <div style="display: flex; justify-content: space-between; font-size: 18px; font-weight: 800;">
+                <span>Total Bill:</span>
+                <span style="color: #d97706;">PKR ${total.toLocaleString()}</span>
+              </div>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn btn-primary" style="flex: 1; padding: 12px;" onclick="settlePosBill(true)">🖨️ Print Bill & Settle</button>
+              <button class="btn btn-dark" style="flex: 1;" onclick="settlePosBill(false)">✓ Cash Settle</button>
+            </div>
+          </div>
+        </div>
+      `;
+      document.getElementById('view-pos').innerHTML = html;
+    }
+
+    function addPosItem(id, name, price) {
+      const existing = posTicket.find(t => t.id === id);
+      if (existing) existing.qty += 1;
+      else posTicket.push({ id, name, price, qty: 1 });
+      renderPOS();
+    }
+
+    function changePosQty(idx, delta) {
+      posTicket[idx].qty += delta;
+      if (posTicket[idx].qty <= 0) posTicket.splice(idx, 1);
+      renderPOS();
+    }
+
+    function settlePosBill(print) {
+      if (posTicket.length === 0) return;
+      const total = posTicket.reduce((s, it) => s + it.price * it.qty, 0);
+      const newOrd = {
+        id: 'ord-' + Date.now(),
+        num: 'ORD-' + (1000 + appData.orders.length + 1),
+        name: 'POS Walk-in Customer',
+        phone: '0300-0000000',
+        addr: 'Saidpur Road Counter',
+        area: 'Main Branch Counter',
+        amount: total,
+        status: 'delivered',
+        rider: ''
+      };
+      appData.orders.unshift(newOrd);
+      // add to roznamcha
+      appData.roznamcha.push({
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        desc: 'POS Bill ' + newOrd.num,
+        type: 'aamad',
+        amount: total,
+        cat: 'Sales'
+      });
+      saveData();
+      if (print) printReceipt(newOrd.id);
+      posTicket = [];
+      alert('Bill Settled! PKR ' + total.toLocaleString());
+      renderPOS();
+    }
+
+    // 4. RENDER STOCK MANAGEMENT
+    function renderStock() {
+      const stock = appData.stock;
+      const lowStock = stock.filter(s => s.qty <= s.min);
+      let html = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <div>
+            <h1 style="font-size: 20px; font-weight: 800;">Stock & Inventory Management · اسٹاک</h1>
+            <p style="font-size: 12px; color: #64748b;">Raw ingredients, rice, chicken, ghee and cylinder levels</p>
+          </div>
+          <button class="btn btn-primary" onclick="openModal('addStockModal')">+ Add Stock Item</button>
+        </div>
+
+        ${lowStock.length > 0 ? `
+          <div class="card" style="background: #fff1f2; border: 1px solid #fecdd3; margin-bottom: 16px;">
+            <div style="font-weight: 800; color: #9f1239; font-size: 13px;">⚠️ Low Stock Alert (کم اسٹاک الرٹ)</div>
+            <div style="font-size: 12px; color: #be123c; margin-top: 4px;">
+              ${lowStock.map(s => `<b>${s.name}</b> (${s.qty} ${s.unit} left)`).join(', ')}
+            </div>
+          </div>
+        ` : ''}
+
+        <div class="card">
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Item Name</th>
+                  <th>In Stock</th>
+                  <th>Alert Limit</th>
+                  <th>Unit Cost</th>
+                  <th>Supplier</th>
+                  <th style="text-align: right;">Adjust</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${stock.map(s => `
+                  <tr style="${s.qty <= s.min ? 'background: #fff1f2;' : ''}">
+                    <td><b>${s.name}</b></td>
+                    <td><b>${s.qty} ${s.unit}</b> ${s.qty <= s.min ? '<span class="badge" style="background: #ffe4e6; color: #9f1239;">LOW</span>' : ''}</td>
+                    <td>${s.min} ${s.unit}</td>
+                    <td>PKR ${s.cost.toLocaleString()}</td>
+                    <td>${s.supplier}</td>
+                    <td style="text-align: right;">
+                      <button class="btn btn-sm btn-outline" onclick="adjustStock('${s.id}', -1)">-1</button>
+                      <button class="btn btn-sm btn-outline" onclick="adjustStock('${s.id}', 1)">+1</button>
+                      <button class="btn btn-sm btn-primary" onclick="adjustStock('${s.id}', 10)">+10</button>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+      document.getElementById('view-stock').innerHTML = html;
+    }
+
+    function adjustStock(id, delta) {
+      const it = appData.stock.find(s => s.id === id);
+      if (it) {
+        it.qty = Math.max(0, it.qty + delta);
+        saveData();
+        renderStock();
+      }
+    }
+
+    // 5. RENDER KHATA SYSTEM
+    let khataSubTab = 'customer';
+    function renderKhata() {
+      let html = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <div>
+            <h1 style="font-size: 20px; font-weight: 800;">Khata System & Roznamcha · کھاتہ بک</h1>
+            <p style="font-size: 12px; color: #64748b;">Customer ledgers, supplier payables and daily cashbook</p>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn ${khataSubTab === 'customer' ? 'btn-dark' : 'btn-outline'}" onclick="khataSubTab = 'customer'; renderKhata();">Customer Khata</button>
+            <button class="btn ${khataSubTab === 'supplier' ? 'btn-dark' : 'btn-outline'}" onclick="khataSubTab = 'supplier'; renderKhata();">Supplier Khata</button>
+            <button class="btn ${khataSubTab === 'roznamcha' ? 'btn-dark' : 'btn-outline'}" onclick="khataSubTab = 'roznamcha'; renderKhata();">Roznamcha Rokar</button>
+          </div>
+        </div>
+      `;
+
+      if (khataSubTab === 'customer') {
+        html += `
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <h3 style="font-weight: 800; font-size: 14px;">Customer Accounts (گاہک کھاتہ)</h3>
+              <button class="btn btn-sm btn-primary" onclick="openModal('addCustModal')">+ New Customer Khata</button>
+            </div>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Customer Name</th>
+                    <th>Phone & Area</th>
+                    <th>Total Udhar</th>
+                    <th>Total Jama</th>
+                    <th>Baqaya (بقایا)</th>
+                    <th style="text-align: right;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${appData.customers.map(c => `
+                    <tr>
+                      <td><b>${c.name}</b></td>
+                      <td>${c.phone}<br><span style="color: #64748b;">${c.area}</span></td>
+                      <td>PKR ${c.udhar.toLocaleString()}</td>
+                      <td style="color: #059669; font-weight: 600;">PKR ${c.jama.toLocaleString()}</td>
+                      <td style="color: #e11d48; font-weight: 800; font-size: 13px;">PKR ${c.baqaya.toLocaleString()}</td>
+                      <td style="text-align: right;">
+                        <button class="btn btn-sm btn-outline" onclick="copyWhatsApp('${c.name}', ${c.baqaya})">WhatsApp</button>
+                        <button class="btn btn-sm btn-success" onclick="custPay('${c.id}')">+ Recovery</button>
+                      </td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        `;
+      } else if (khataSubTab === 'supplier') {
+        html += `
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <h3 style="font-weight: 800; font-size: 14px;">Supplier Liabilities (سپلائر کھاتہ)</h3>
+              <button class="btn btn-sm btn-primary" onclick="openModal('addSupModal')">+ New Supplier</button>
+            </div>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Supplier Firm</th>
+                    <th>Contact & Phone</th>
+                    <th>Items Supplied</th>
+                    <th>Total Billed</th>
+                    <th>Total Paid</th>
+                    <th>Payable Baqaya</th>
+                    <th style="text-align: right;">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${appData.suppliers.map(s => `
+                    <tr>
+                      <td><b>${s.name}</b></td>
+                      <td>${s.contact}<br><span style="color: #64748b;">${s.phone}</span></td>
+                      <td>${s.items}</td>
+                      <td>PKR ${s.udhar.toLocaleString()}</td>
+                      <td style="color: #059669; font-weight: 600;">PKR ${s.jama.toLocaleString()}</td>
+                      <td style="color: #7c3aed; font-weight: 800; font-size: 13px;">PKR ${s.baqaya.toLocaleString()}</td>
+                      <td style="text-align: right;">
+                        <button class="btn btn-sm btn-outline" onclick="supPay('${s.id}')">+ Pay Bill</button>
+                      </td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        `;
+      } else {
+        const totalAamad = appData.roznamcha.filter(r => r.type === 'aamad').reduce((s, r) => s + r.amount, 0);
+        const totalKharch = appData.roznamcha.filter(r => r.type === 'kharch').reduce((s, r) => s + r.amount, 0);
+        html += `
+          <div class="grid-3" style="margin-bottom: 16px;">
+            <div class="card"><div style="font-size: 11px; color: #64748b;">TOTAL AAMAD (آمد)</div><div style="font-size: 24px; font-weight: 800; color: #059669;">+PKR ${totalAamad.toLocaleString()}</div></div>
+            <div class="card"><div style="font-size: 11px; color: #64748b;">TOTAL KHARCH (خرچ)</div><div style="font-size: 24px; font-weight: 800; color: #e11d48;">-PKR ${totalKharch.toLocaleString()}</div></div>
+            <div class="card"><div style="font-size: 11px; color: #64748b;">CLOSING BALANCE (روکڑ)</div><div style="font-size: 24px; font-weight: 800; color: #0f172a;">PKR ${(totalAamad - totalKharch).toLocaleString()}</div></div>
+          </div>
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <h3 style="font-weight: 800; font-size: 14px;">Roznamcha Entries Today</h3>
+              <button class="btn btn-sm btn-primary" onclick="openModal('addRoznamchaModal')">+ New Roznamcha Entry</button>
+            </div>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr><th>Time</th><th>Description</th><th>Category</th><th>Kharch (Debit)</th><th>Aamad (Credit)</th></tr>
+                </thead>
+                <tbody>
+                  ${appData.roznamcha.map(r => `
+                    <tr>
+                      <td>${r.time}</td>
+                      <td><b>${r.desc}</b></td>
+                      <td><span class="badge" style="background: #f1f5f9; color: #475569;">${r.cat}</span></td>
+                      <td style="color: #e11d48; font-weight: 700;">${r.type === 'kharch' ? 'PKR ' + r.amount.toLocaleString() : '-'}</td>
+                      <td style="color: #059669; font-weight: 700;">${r.type === 'aamad' ? 'PKR ' + r.amount.toLocaleString() : '-'}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        `;
+      }
+      document.getElementById('view-khata').innerHTML = html;
+    }
+
+    function copyWhatsApp(name, baqaya) {
+      const msg = 'محترم ' + name + ' صاحب! کراچی نور بریانی سید پور روڈ راولپنڈی کی طرف آپ کا سابقہ بقایا PKR ' + baqaya.toLocaleString() + ' ہے۔ برائے کرم ادائیگی فرمائیں۔ جزاک اللہ!';
+      navigator.clipboard?.writeText(msg);
+      alert('Copied WhatsApp message to clipboard:\n\n' + msg);
+    }
+
+    function custPay(id) {
+      const amt = prompt('Enter Recovery Amount (PKR):', '5000');
+      if (amt && Number(amt) > 0) {
+        const c = appData.customers.find(x => x.id === id);
+        c.jama += Number(amt);
+        c.baqaya = Math.max(0, c.udhar - c.jama);
+        appData.roznamcha.push({ time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}), desc: 'Khata recovery: ' + c.name, type: 'aamad', amount: Number(amt), cat: 'Recovery' });
+        saveData();
+        renderKhata();
+      }
+    }
+
+    function supPay(id) {
+      const amt = prompt('Enter Payment Amount to Supplier (PKR):', '20000');
+      if (amt && Number(amt) > 0) {
+        const s = appData.suppliers.find(x => x.id === id);
+        s.jama += Number(amt);
+        s.baqaya = Math.max(0, s.udhar - s.jama);
+        appData.roznamcha.push({ time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}), desc: 'Payment to ' + s.name, type: 'kharch', amount: Number(amt), cat: 'Supplier' });
+        saveData();
+        renderKhata();
+      }
+    }
+
+    // 6. RENDER REPORTS SCREEN
+    function renderReports() {
+      let html = `
+        <div style="margin-bottom: 16px;">
+          <h1 style="font-size: 20px; font-weight: 800;">Business Reports & Profit Analytics · رپورٹس</h1>
+          <p style="font-size: 12px; color: #64748b;">Monthly trends, profit margins per item and branch summaries</p>
+        </div>
+        <div class="card" style="margin-bottom: 16px;">
+          <h3 style="font-weight: 800; font-size: 14px; margin-bottom: 10px;">Monthly Sales & Profit Trends (2026)</h3>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr><th>Month</th><th>Orders</th><th>Gross Sales</th><th>Net Profit</th><th>Margin %</th></tr>
+              </thead>
+              <tbody>
+                ${appData.monthly.map(m => `
+                  <tr>
+                    <td><b>${m.month}</b></td>
+                    <td>${m.orders}</td>
+                    <td style="font-weight: 700;">PKR ${m.sales.toLocaleString()}</td>
+                    <td style="color: #059669; font-weight: 800;">PKR ${m.profit.toLocaleString()}</td>
+                    <td><span class="badge" style="background: #d1fae5; color: #065f46;">${Math.round((m.profit/m.sales)*100)}%</span></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+      document.getElementById('view-reports').innerHTML = html;
+    }
+
+    // Modal & Print Actions
+    function assignRiderPrompt(orderId) {
+      const o = appData.orders.find(x => x.id === orderId);
+      if (o) {
+        o.status = 'dispatched';
+        o.rider = 'Kamran Khan';
+        saveData();
+        renderDashboard();
+        alert('Rider Kamran Khan assigned to ' + o.num);
+      }
+    }
+
+    function completeOrder(orderId) {
+      const o = appData.orders.find(x => x.id === orderId);
+      if (o) {
+        o.status = 'delivered';
+        saveData();
+        renderDashboard();
+      }
+    }
+
+    function printReceipt(orderId) {
+      const o = appData.orders.find(x => x.id === orderId);
+      if (!o) return;
+      const receiptHtml = `
+        <div style="font-family: monospace; font-size: 11px; padding: 10px; text-align: center;">
+          <div style="font-size: 16px; font-weight: bold;">کراچی نور بریانی اینڈ مرغ پلاؤ</div>
+          <div style="font-size: 12px; font-weight: bold;">KARACHI NOOR BIRYANI</div>
+          <div>Saidpur Road, Pandora Chungi Rawalpindi</div>
+          <div>Phone: 051-4852341 / 0300-5128963</div>
+          <div style="border-bottom: 1px dashed #000; margin: 6px 0;"></div>
+          <div style="text-align: left;">
+            <div>Order: ${o.num}</div>
+            <div>Customer: ${o.name}</div>
+            <div>Phone: ${o.phone}</div>
+            <div>Address: ${o.addr}</div>
+          </div>
+          <div style="border-bottom: 1px dashed #000; margin: 6px 0;"></div>
+          <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 14px;">
+            <span>TOTAL BILL:</span>
+            <span>PKR ${o.amount.toLocaleString()}</span>
+          </div>
+          <div style="border-bottom: 1px dashed #000; margin: 6px 0;"></div>
+          <div style="margin-top: 8px;">جزاک اللہ! آپ کی تشریف آوری کا شکریہ</div>
+        </div>
+      `;
+      const p = document.getElementById('printable-receipt');
+      p.innerHTML = receiptHtml;
+      p.style.display = 'block';
+      window.print();
+      p.style.display = 'none';
+    }
+
+    // Initialize View
+    setTab('dashboard');
+  </script>
+</body>
+</html>
