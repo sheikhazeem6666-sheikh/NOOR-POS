@@ -986,6 +986,7 @@
             <div style="font-weight: 800; font-size: 14px;">🗺️ Live Rider Tracking Map</div>
             <div style="display:flex; gap:6px; align-items:center;">
               <span class="badge" style="background: #d1fae5; color: #065f46;">${activeRiders} RIDERS LIVE</span>
+              <button class="btn btn-sm btn-outline" onclick="findPlaceOnMap()">🔎 Jagah dhoondo</button>
               <button id="rest-btn" class="btn btn-sm btn-outline" onclick="toggleSetRest()">📍 Restaurant ki location set karo</button>
               ${fbRiders.length === 0 ? '<button class="btn btn-sm btn-outline" onclick="toggleMap()">✖ Band</button>' : ''}
             </div>
@@ -2123,6 +2124,27 @@
       if (mapEl) mapEl.style.cursor = settingRest ? 'crosshair' : '';
     }
     function toggleSetRest() { settingRest = !settingRest; setRestBtn(); }
+
+    // Jagah ka naam likh kar map wahan le jao, ya Google Maps ke coordinates (33.6, 73.1) seedha paste karo
+    async function findPlaceOnMap() {
+      if (!riderMap) { uiToast('Pehle map khulne dein'); return; }
+      const q = (prompt('Jagah ka naam likhein (jaise: Saidpur Road Rawalpindi)\nYa Google Maps ke coordinates paste karein (jaise: 33.6844, 73.0479)') || '').trim();
+      if (!q) return;
+      const m = q.match(/^(-?\d{1,2}\.\d+)\s*[, ]\s*(-?\d{1,3}\.\d+)$/);
+      if (m) {
+        appData.restLoc = { lat: parseFloat(m[1]), lng: parseFloat(m[2]) };
+        saveData(); drawRestMarker(); riderMap.setView([appData.restLoc.lat, appData.restLoc.lng], 17);
+        uiToast('✅ Restaurant ki location set ho gayi', 'ok'); return;
+      }
+      try {
+        const r = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(q));
+        const j = await r.json();
+        if (!j.length) { uiToast('Yeh jagah nahi mili. Doosra naam try karein'); return; }
+        riderMap.setView([parseFloat(j[0].lat), parseFloat(j[0].lon)], 16);
+        settingRest = true; setRestBtn();
+        uiToast('Map wahan aa gaya. Ab restaurant ki jagah par ek click karein');
+      } catch (e) { uiToast('Search nahi chali. Internet check karein'); }
+    }
 
     function focusRider(id) {
       const r = fbRiders.find(x => x.id === id);
