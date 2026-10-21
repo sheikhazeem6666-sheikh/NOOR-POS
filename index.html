@@ -886,7 +886,8 @@
             <td style="text-align:right;">
               <div style="display:inline-flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;">
                 ${open && !isCounter ? `<button class="btn btn-sm btn-primary" onclick="assignRiderPrompt('${o.id}')">${o.rider ? 'Rider Badlo' : 'Rider Bhejo'}</button>` : ''}
-                ${o.status === 'dispatched' && o.riderId ? `<button class="btn btn-sm btn-outline" onclick="focusRider('${khEsc(o.riderId)}')">📍</button>` : ''}
+                ${o.status === 'dispatched' && o.riderId ? `<button class="btn btn-sm btn-outline" onclick="openRiderOnGoogle('${khEsc(o.riderId)}')">📍 Rider</button>` : ''}
+                ${!isCounter && o.addr ? `<a class="btn btn-sm btn-outline" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(o.addr + ' Rawalpindi')}">🗺️ Address</a>` : ''}
                 ${open ? `<button class="btn btn-sm btn-outline" style="color:#047857;border-color:#a7f3d0;" onclick="completeOrder('${o.id}')">✔ Complete</button>` : ''}
                 ${open ? `<button class="btn btn-sm btn-outline" style="color:#e11d48;border-color:#fecdd3;" onclick="cancelOrder('${o.id}')">✖ Cancel</button>` : ''}
                 ${o.status === 'cancelled' ? `<button class="btn btn-sm btn-outline" onclick="reopenOrder('${o.id}')">↩ Dobara kholo</button>` : ''}
@@ -1019,7 +1020,7 @@
                   <td>${khEsc(r.phone)}<br><span style="color:#64748b;">PIN: ${khEsc(r.pin)}</span></td>
                   <td>${on ? '<span class="badge badge-delivered">ONLINE</span>' : '<span class="badge" style="background:#f1f5f9;color:#64748b;">OFFLINE</span>' + (ago !== null ? '<br><span style="font-size:10px;color:#94a3b8;">' + ago + ' min pehle</span>' : '')}</td>
                   <td style="text-align:right;">
-                    ${r.lat != null ? `<button class="btn btn-sm btn-outline" onclick="focusRider('${r.id}')">📍 Map</button>` : ''}
+                    ${r.lat != null ? `<a class="btn btn-sm btn-outline" target="_blank" rel="noopener" href="https://www.google.com/maps?q=${r.lat},${r.lng}">📍 Google Map</a>` : ''}
                     <button class="btn btn-sm btn-outline" onclick="openRiderForm('${r.id}')">✏️ Edit</button>
                     <button class="btn btn-sm btn-outline" style="color:#e11d48;border-color:#fecdd3;" onclick="deleteRider('${r.id}')">🗑</button>
                   </td>
@@ -2146,6 +2147,11 @@
       } catch (e) { uiToast('Search nahi chali. Internet check karein'); }
     }
 
+    function openRiderOnGoogle(id) {
+      const r = fbRiders.find(x => x.id === id);
+      if (r && r.lat != null) window.open('https://www.google.com/maps?q=' + r.lat + ',' + r.lng, '_blank');
+      else uiToast('Rider ki location abhi nahi aa rahi (rider.html par Start dabana zaroori hai)');
+    }
     function focusRider(id) {
       const r = fbRiders.find(x => x.id === id);
       if (r && r.lat != null && riderMap) { window.scrollTo({ top: 0, behavior: 'smooth' }); riderMap.setView([r.lat, r.lng], 17); }
