@@ -3201,6 +3201,51 @@
       }
       if (visible) renderMessages();
     };
+    // ---- Messages se Delivery Order banana ----
+    function openDeliveryForm() {
+      const chat = (window._inboxChats || []).find(x => String(x.phone || x.id) === msgSel) || {};
+      const ph = String(msgSel || '');
+      const local = ph.startsWith('92') ? '0' + ph.slice(2) : ph;
+      const inp = 'width:100%;padding:9px 10px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;margin-top:3px;';
+      const lbl = 'display:block;font-size:12px;font-weight:700;color:#475569;margin-top:10px;';
+      document.getElementById('modals-root').innerHTML = `
+        <div style="position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;" onclick="if(event.target===this)closeKhataForm()">
+          <div style="background:#fff;border-radius:14px;padding:18px;width:100%;max-width:420px;max-height:90vh;overflow:auto;color:#0f172a;">
+            <h3 style="font-weight:800;font-size:16px;">🛵 Naya Delivery Order</h3>
+            <label style="${lbl}">Customer ka naam<input id="do-name" style="${inp}" value="${khEsc(chat.name || '')}"></label>
+            <label style="${lbl}">Phone<input id="do-phone" style="${inp}" inputmode="numeric" value="${khEsc(local)}"></label>
+            <label style="${lbl}">Address<textarea id="do-addr" rows="2" style="${inp}"></textarea></label>
+            <label style="${lbl}">Items (jo mangwaya)<textarea id="do-items" rows="3" style="${inp}" placeholder="1 KG Chicken Biryani x1, Raita x2"></textarea></label>
+            <label style="${lbl}">Total rakam (PKR, delivery samet)<input id="do-amount" style="${inp}" inputmode="numeric"></label>
+            <label style="${lbl}">Payment<select id="do-pay" style="${inp}"><option>Cash on Delivery</option><option>Easypaisa / JazzCash</option><option>Bank Transfer</option></select></label>
+            <div style="display:flex;gap:8px;margin-top:16px;">
+              <button class="btn btn-primary" style="flex:1;padding:11px;" onclick="saveDeliveryOrder()">Order Banao</button>
+              <button class="btn btn-outline" style="flex:1;padding:11px;" onclick="closeKhataForm()">Cancel</button>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function saveDeliveryOrder() {
+      const v = k => document.getElementById('do-' + k).value.trim();
+      const name = v('name'), phone = v('phone'), addr = v('addr'), items = v('items'), amount = Number(v('amount').replace(/[^\d.]/g, ''));
+      if (!name) { alert('Customer ka naam likhein'); return; }
+      if (!addr) { alert('Address likhein'); return; }
+      if (!items) { alert('Items likhein'); return; }
+      if (!amount || amount <= 0) { alert('Total rakam likhein'); return; }
+      const mx = (appData.orders || []).reduce((m, o) => Math.max(m, parseInt(String(o.num || '').replace(/\D/g, '')) || 0), 1000);
+      const ord = {
+        id: 'ord-' + Date.now(), ts: Date.now(), num: 'ORD-' + (mx + 1),
+        name: name, phone: phone, addr: addr, area: '', amount: amount,
+        status: 'pending', rider: '', type: 'Delivery', source: 'dashboard-whatsapp',
+        payment: v('pay'), items: [{ name: items, portion: '', price: amount, qty: 1 }]
+      };
+      if (!window.saveOrderToFirestore) { alert('Firestore connect nahi hai, internet check karein'); return; }
+      window.saveOrderToFirestore(ord)
+        .then(() => { closeKhataForm(); uiToast('✅ ' + ord.num + ' ban gaya. Owner Dashboard mein Rider Bhejo dabayein.', 'ok'); })
+        .catch(e => alert('Order save nahi hua: ' + e.message + '\n(Firestore rules check karein)'));
+    }
+
     function openChat(phone) {
       msgSel = String(phone); msgReplyTo = null; msgDraft = ''; msgForceBottom = true; msgLastSig = '';
       if (window.openInboxChat) window.openInboxChat(msgSel);
@@ -3540,6 +3585,7 @@
           <div class="msg-foot">
             ${w.open ? '<span>Jawab yahan se ya phone ki Business app se de sakte hain.</span>' : '<span>24 ghante guzar gaye — yahan se jawab nahi ja sakta. WhatsApp se template bhejein.</span>'}
             <a class="btn btn-sm btn-outline" href="https://wa.me/${khEsc(msgSel)}" target="_blank" rel="noopener">WhatsApp kholein</a>
+            <button class="btn btn-sm btn-primary" onclick="openDeliveryForm()">🛵 Delivery Order</button>
             <button class="btn btn-sm btn-outline" onclick="toggleMsgCfg()">⚙️ Setting</button>
           </div>`;
       }
