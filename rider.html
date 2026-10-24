@@ -69,6 +69,10 @@
   .acts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
   .acts a{display:block;text-align:center;text-decoration:none;color:#fff;font-weight:800;font-size:14px;padding:12px;border-radius:12px}
   .call{background:var(--blue)} .nav{background:#7c3aed}
+  .ar{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+  .ar button{border:0;color:#fff;font-weight:800;font-size:15px;padding:14px;border-radius:12px}
+  .acc{background:linear-gradient(135deg,#10b981,#059669)} .rej{background:linear-gradient(135deg,#f43f5e,#e11d48)}
+  .accd{margin-top:10px;text-align:center;color:#34d399;font-weight:800;font-size:14px}
   .done{margin-top:10px;background:linear-gradient(135deg,#10b981,#059669);color:#fff;border:0;width:100%;border-radius:12px;padding:14px;font-size:15px;font-weight:800}
   .empty{text-align:center;padding:22px 0 8px;color:var(--muted);font-size:14px}
   .empty .big{font-size:34px;display:block;margin-bottom:6px}
@@ -267,7 +271,7 @@ function showBar(msg, color) {
   let n = 0; bell();
   bellTimer = setInterval(() => { if (++n > 20) stopBell(); else bell(); }, 3000);
 }
-let prevOrders = new Map();
+let prevOrders = new Map(), selfLeft = new Set();
 function riderAlert(list, cancelled) {
   const ids = list.map(o => o.id);
   if (seenOrders === null) { seenOrders = new Set(ids); return; }
@@ -292,7 +296,7 @@ function listenOrders() {
       if (list.some(o => o.id === id)) return;
       const cur = all.find(o => o.id === id);
       const st = cur ? String(cur.status || '').toLowerCase() : '';
-      if (st === 'delivered') return; // rider ne khud deliver kiya
+      if (st === 'delivered' || selfLeft.has(id)) return; // rider ne khud deliver ya reject kiya
       cancelled.push(label);
     });
     prevOrders = new Map(list.map(o => [o.id, String(o.num || o.orderNumber || o.id)]));
@@ -312,11 +316,38 @@ function listenOrders() {
           ${phone ? `<a class="call" href="tel:${esc(phone)}">📞 Call</a>` : '<span></span>'}
           ${addr ? `<a class="nav" href="${map}" target="_blank" rel="noopener">🗺️ Map</a>` : '<span></span>'}
         </div>
-        <button class="done" onclick="markDelivered('${esc(o.id)}')">✅ Delivered</button>
+        ${o.riderAccepted
+          ? `<div class="accd">✅ Aap ne accept kar liya</div>
+        <button class="done" onclick="markDelivered('${esc(o.id)}')">✅ Delivered</button>`
+          : `<div class="ar">
+          <button class="acc" onclick="acceptOrder('${esc(o.id)}')">✅ Accept</button>
+          <button class="rej" onclick="rejectOrder('${esc(o.id)}')">❌ Reject</button>
+        </div>`}
       </div>`;
     }).join('');
   }, e => { $('orders').innerHTML = '<div class="empty">Orders load nahi hue: ' + esc(e.message) + '</div>'; });
 }
+
+window.acceptOrder = async function (id) {
+  stopBell();
+  try {
+    await setDoc(doc(db, BASE + "/orders", id), {
+      riderAccepted: true, riderAcceptedAt: serverTimestamp(), riderRejected: false
+    }, { merge: true });
+  } catch (e) { alert('Accept nahi hua: ' + e.message); }
+};
+
+window.rejectOrder = async function (id) {
+  if (!confirm('Kya aap ye order reject karna chahte hain?')) return;
+  stopBell();
+  selfLeft.add(id);
+  try {
+    await setDoc(doc(db, BASE + "/orders", id), {
+      riderId: null, riderAccepted: false, riderRejected: true,
+      rejectedBy: me.id, rejectedByName: me.name || me.id, rejectedAt: serverTimestamp()
+    }, { merge: true });
+  } catch (e) { selfLeft.delete(id); alert('Reject nahi hua: ' + e.message); }
+};
 
 window.markDelivered = async function (id) {
   if (!confirm('Order deliver ho gaya?')) return;
