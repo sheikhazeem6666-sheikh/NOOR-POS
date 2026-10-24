@@ -2178,6 +2178,44 @@
         localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
       }).catch(e => console.warn('Sheet send failed:', e));
     }
+    // ---- Naye order ki ghanti (dashboard) ----
+    let _ordFirst = true, _ordTimer = null, _ordAC = null;
+    function _ordBell() {
+      try {
+        if (!_ordAC) _ordAC = new (window.AudioContext || window.webkitAudioContext)();
+        if (_ordAC.state === 'suspended') _ordAC.resume();
+        const ac = _ordAC, t0 = ac.currentTime + 0.02;
+        [[880, 0], [1320, .22], [880, .5], [1320, .72]].forEach(([f, st]) => {
+          const o = ac.createOscillator(), g = ac.createGain();
+          o.type = 'triangle'; o.frequency.value = f;
+          g.gain.setValueAtTime(0.0001, t0 + st);
+          g.gain.exponentialRampToValueAtTime(0.5, t0 + st + 0.02);
+          g.gain.exponentialRampToValueAtTime(0.0001, t0 + st + 0.2);
+          o.connect(g); g.connect(ac.destination); o.start(t0 + st); o.stop(t0 + st + 0.22);
+        });
+      } catch (e) {}
+    }
+    ['click', 'keydown', 'touchstart'].forEach(ev => document.addEventListener(ev, () => { try { if (!_ordAC) _ordAC = new (window.AudioContext || window.webkitAudioContext)(); if (_ordAC.state === 'suspended') _ordAC.resume(); } catch (e) {} }, { passive: true }));
+    function stopOrderBell() {
+      if (_ordTimer) { clearInterval(_ordTimer); _ordTimer = null; }
+      const b = document.getElementById('ord-alert'); if (b) b.remove();
+      document.title = document.title.replace(/^🔔 /, '');
+    }
+    function newOrderAlert(changes) {
+      if (_ordFirst) { _ordFirst = false; return; }
+      const fresh = changes.filter(c => c.type === 'added').map(c => normalizeOrder(c.doc.id, c.doc.data()))
+        .filter(o => String(o.status || 'pending').toLowerCase() === 'pending' && o.type !== 'Counter' && o.source !== 'dashboard-whatsapp');
+      if (!fresh.length) return;
+      stopOrderBell();
+      const d = document.createElement('div'); d.id = 'ord-alert';
+      d.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:100000;background:#dc2626;color:#fff;padding:14px 16px;display:flex;align-items:center;gap:12px;font-weight:800;font-size:15px;box-shadow:0 6px 20px rgba(0,0,0,.35);';
+      d.innerHTML = '<span style="font-size:22px;">🔔</span><span style="flex:1;">Naya order: ' + khEsc(fresh.map(o => o.num || o.id).join(', ')) + '</span><button style="background:#fff;color:#dc2626;border:0;border-radius:8px;padding:8px 14px;font-weight:800;" onclick="stopOrderBell()">Dekh liya</button>';
+      document.body.appendChild(d);
+      document.title = '🔔 ' + document.title;
+      let n = 0; _ordBell();
+      _ordTimer = setInterval(() => { if (++n > 30) stopOrderBell(); else _ordBell(); }, 3000);
+    }
+
     function onOrdersChanged(changes) {
       if (!sheetOn()) return;
       const sy = appData.sheetSynced || {};
@@ -3688,6 +3726,7 @@
 
     onSnapshot(collection(db, "restaurants/karachi-noor/orders"), snap => {
       appData.orders = snap.docs.map(d => normalizeOrder(d.id, d.data()));
+      try { newOrderAlert(snap.docChanges()); } catch (e) { console.warn(e); }
       onOrdersChanged(snap.docChanges());
       localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
       if (document.getElementById('view-dashboard').style.display !== 'none') renderDashboard();
