@@ -238,12 +238,47 @@ window.stopShare = async function () {
   $('gpsInfo').textContent = 'Location band hai.';
 };
 
+// ---- Naye order ki ghanti (rider) ----
+let ac = null, seenOrders = null, bellTimer = null;
+function unlockAudio() { try { if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)(); if (ac.state === 'suspended') ac.resume(); } catch (e) {} }
+['click', 'touchstart'].forEach(ev => document.addEventListener(ev, unlockAudio, { passive: true }));
+function bell() {
+  try {
+    unlockAudio(); const t0 = ac.currentTime + 0.02;
+    [[880, 0], [1320, .22], [880, .5], [1320, .72]].forEach(([f, st]) => {
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.type = 'triangle'; o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, t0 + st);
+      g.gain.exponentialRampToValueAtTime(0.6, t0 + st + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + st + 0.2);
+      o.connect(g); g.connect(ac.destination); o.start(t0 + st); o.stop(t0 + st + 0.22);
+    });
+    if (navigator.vibrate) navigator.vibrate([300, 150, 300, 150, 300]);
+  } catch (e) {}
+}
+function stopBell() { if (bellTimer) { clearInterval(bellTimer); bellTimer = null; } const b = document.getElementById('newbar'); if (b) b.remove(); }
+function riderAlert(list) {
+  const ids = list.map(o => o.id);
+  if (seenOrders === null) { seenOrders = new Set(ids); return; }
+  const fresh = list.filter(o => !seenOrders.has(o.id));
+  ids.forEach(i => seenOrders.add(i));
+  if (!fresh.length) return;
+  stopBell();
+  const d = document.createElement('div'); d.id = 'newbar';
+  d.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#dc2626;color:#fff;padding:16px;display:flex;align-items:center;gap:10px;font-weight:800;font-size:16px;';
+  d.innerHTML = '<span style="font-size:24px;">🔔</span><span style="flex:1;">Naya order mila!</span><button style="background:#fff;color:#dc2626;border:0;border-radius:8px;padding:9px 14px;font-weight:800;" onclick="stopBell()">OK</button>';
+  document.body.appendChild(d);
+  let n = 0; bell();
+  bellTimer = setInterval(() => { if (++n > 20) stopBell(); else bell(); }, 3000);
+}
+
 function listenOrders() {
   if (unsubOrders) unsubOrders();
   const q = query(collection(db, BASE + "/orders"), where("riderId", "==", me.id));
   unsubOrders = onSnapshot(q, snap => {
     const list = snap.docs.map(d => ({ id: d.id, ...d.data() }))
       .filter(o => String(o.status || '').toLowerCase() === 'dispatched');
+    riderAlert(list);
     $('ocount').textContent = list.length;
     if (!list.length) { $('orders').innerHTML = '<div class="empty"><span class="big">🛵</span>Abhi koi order nahi</div>'; return; }
     $('orders').innerHTML = list.map(o => {
