@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b1220">
+<title>Rider App - Karachi Noor Biryani</title>
+<style>
+  :root{
+    --bg:#0b1220; --card:#131c2e; --card2:#1a2540; --line:#243250;
+    --text:#f1f5f9; --muted:#8fa0bd; --amber:#f59e0b; --amber2:#d97706;
+    --green:#10b981; --red:#f43f5e; --blue:#3b82f6;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0}
+  body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:env(safe-area-inset-bottom)}
+  .hidden{display:none!important}
+
+  /* Header */
+  .top{background:linear-gradient(135deg,#b45309,#f59e0b);padding:calc(18px + env(safe-area-inset-top)) 18px 46px;border-radius:0 0 28px 28px;box-shadow:0 10px 30px rgba(245,158,11,.25)}
+  .brand{display:flex;align-items:center;gap:12px}
+  .logo{width:46px;height:46px;border-radius:14px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:26px}
+  .brand h1{margin:0;font-size:17px;font-weight:800;color:#fff;line-height:1.2}
+  .brand p{margin:2px 0 0;font-size:12px;color:rgba(255,255,255,.85)}
+  .wrap{max-width:480px;margin:-30px auto 0;padding:0 16px 28px}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;margin-bottom:14px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+  .title{font-size:15px;font-weight:800;margin:0 0 4px}
+  .muted{color:var(--muted);font-size:13px}
+
+  /* Login */
+  label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-top:14px;letter-spacing:.3px;text-transform:uppercase}
+  input{width:100%;padding:14px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--card2);color:#fff;font-size:17px;margin-top:6px;outline:none}
+  input:focus{border-color:var(--amber)}
+  .btn{width:100%;border:0;border-radius:14px;padding:15px;font-size:16px;font-weight:800;color:#fff;margin-top:16px;cursor:pointer}
+  .btn:active{transform:scale(.98)}
+  .btn-amber{background:linear-gradient(135deg,var(--amber),var(--amber2))}
+  .btn-ghost{background:transparent;border:1.5px solid var(--line);color:var(--muted);font-weight:700;padding:12px;font-size:14px}
+  .err{color:#fda4af;background:rgba(244,63,94,.12);border:1px solid rgba(244,63,94,.3);padding:10px 12px;border-radius:10px;font-size:13px;margin-top:12px}
+
+  /* Profile + status */
+  .profile{display:flex;align-items:center;gap:12px}
+  .avatar{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--amber),var(--amber2));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;color:#fff}
+  .pname{font-weight:800;font-size:17px}
+  .pill{margin-left:auto;display:inline-flex;align-items:center;gap:7px;padding:7px 12px;border-radius:99px;font-size:12px;font-weight:800}
+  .pill .dot{width:9px;height:9px;border-radius:50%}
+  .pill.off{background:#1f2a44;color:var(--muted)} .pill.off .dot{background:#64748b}
+  .pill.on{background:rgba(16,185,129,.15);color:#6ee7b7} .pill.on .dot{background:var(--green);animation:pulse 1.4s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(16,185,129,.7)}100%{box-shadow:0 0 0 10px rgba(16,185,129,0)}}
+
+  /* Big start/stop */
+  .gps{text-align:center;padding:26px 18px}
+  .bigbtn{width:150px;height:150px;border-radius:50%;border:0;color:#fff;font-weight:800;font-size:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;margin:0 auto;cursor:pointer}
+  .bigbtn .ic{font-size:36px;line-height:1}
+  .bigbtn.start{background:radial-gradient(circle at 30% 25%,#34d399,#059669);box-shadow:0 0 0 10px rgba(16,185,129,.12),0 14px 30px rgba(5,150,105,.4)}
+  .bigbtn.stop{background:radial-gradient(circle at 30% 25%,#fb7185,#e11d48);box-shadow:0 0 0 10px rgba(244,63,94,.12),0 14px 30px rgba(225,29,72,.4)}
+  .bigbtn:active{transform:scale(.97)}
+  #gpsInfo{margin-top:18px;font-size:13px;color:var(--muted);line-height:1.5}
+
+  /* Orders */
+  .oh{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+  .count{background:var(--amber);color:#1c1200;font-weight:800;font-size:12px;border-radius:99px;padding:3px 10px}
+  .order{background:var(--card2);border:1px solid var(--line);border-radius:16px;padding:14px;margin-top:12px}
+  .o1{display:flex;justify-content:space-between;align-items:center}
+  .onum{font-weight:800;font-size:15px}
+  .oamt{font-weight:800;color:var(--amber);font-size:15px}
+  .ocust{margin-top:8px;font-weight:700;font-size:15px}
+  .oaddr{margin-top:4px;font-size:13px;color:var(--muted);line-height:1.45}
+  .acts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+  .acts a{display:block;text-align:center;text-decoration:none;color:#fff;font-weight:800;font-size:14px;padding:12px;border-radius:12px}
+  .call{background:var(--blue)} .nav{background:#7c3aed}
+  .done{margin-top:10px;background:linear-gradient(135deg,#10b981,#059669);color:#fff;border:0;width:100%;border-radius:12px;padding:14px;font-size:15px;font-weight:800}
+  .empty{text-align:center;padding:22px 0 8px;color:var(--muted);font-size:14px}
+  .empty .big{font-size:34px;display:block;margin-bottom:6px}
+  .foot{text-align:center;color:#51617f;font-size:11px;margin-top:8px}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="brand">
+    <div class="logo">🍛</div>
+    <div>
+      <h1>Karachi Noor Biryani</h1>
+      <p>Rider App</p>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- LOGIN -->
+  <div id="loginBox" class="card">
+    <p class="title">Rider Login</p>
+    <div class="muted">Apna phone number aur PIN likhein</div>
+    <label for="phone">Phone Number</label>
+    <input id="phone" inputmode="numeric" maxlength="11" placeholder="03XXXXXXXXX" autocomplete="tel">
+    <label for="pin">4 Digit PIN</label>
+    <input id="pin" type="password" inputmode="numeric" maxlength="4" placeholder="••••" autocomplete="current-password">
+    <button class="btn btn-amber" onclick="doLogin()">Login</button>
+    <div id="loginErr" class="err hidden"></div>
+  </div>
+
+  <!-- MAIN -->
+  <div id="mainBox" class="hidden">
+
+    <div class="card">
+      <div class="profile">
+        <div class="avatar" id="avatar">R</div>
+        <div class="pname" id="rName">Rider</div>
+        <span id="stBadge" class="pill off"><span class="dot"></span><span id="stText">OFFLINE</span></span>
+      </div>
+    </div>
+
+    <div class="card gps">
+      <button id="startBtn" class="bigbtn start" onclick="startShare()"><span class="ic">▶</span>START</button>
+      <button id="stopBtn" class="bigbtn stop hidden" onclick="stopShare()"><span class="ic">■</span>STOP</button>
+      <div id="gpsInfo">Start dabayein aur location ki permission "Allow" karein. Kaam ke dauran screen on rakhein.</div>
+    </div>
+
+    <div class="card">
+      <div class="oh">
+        <p class="title" style="margin:0">📦 Mere Orders</p>
+        <span class="count" id="ocount">0</span>
+      </div>
+      <div id="orders"><div class="empty"><span class="big">🛵</span>Abhi koi order nahi</div></div>
+    </div>
+
+    <button class="btn btn-ghost" onclick="logout()">Logout</button>
+  </div>
+
+  <div class="foot">Karachi Noor Biryani &amp; Murgh Pulao</div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc, collection, query, where, onSnapshot, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyBv6f3gkWaERS7K7KhStUSVGVxfuq-11jE",
+  authDomain: "karachi--noor-biryani.firebaseapp.com",
+  projectId: "karachi--noor-biryani",
+  storageBucket: "karachi--noor-biryani.firebasestorage.app",
+  messagingSenderId: "354512185119",
+  appId: "1:354512185119:web:534218ae25afe96bc4322a"
+});
+const db = getFirestore(app);
+const BASE = "restaurants/karachi-noor";
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+let me = null, watchId = null, wakeLock = null, unsubOrders = null, lastSent = 0;
+
+function showErr(m){ const e=$('loginErr'); e.textContent=m; e.classList.toggle('hidden', !m); }
+function setStatus(on){
+  $('stBadge').className = 'pill ' + (on ? 'on' : 'off');
+  $('stText').textContent = on ? 'ONLINE' : 'OFFLINE';
+}
+
+window.doLogin = async function () {
+  const phone = $('phone').value.trim(), pin = $('pin').value.trim();
+  showErr('');
+  if (!/^03\d{9}$/.test(phone) || !/^\d{4}$/.test(pin)) { showErr('Phone 11 digit aur PIN 4 digit likhein'); return; }
+  try {
+    const snap = await getDoc(doc(db, BASE + "/riders", phone));
+    if (!snap.exists() || String(snap.data().pin) !== pin) { showErr('Phone ya PIN galat hai'); return; }
+    me = { id: phone, ...snap.data() };
+    localStorage.setItem('riderLogin', JSON.stringify({ phone, pin }));
+    showMain();
+  } catch (e) {
+    showErr('Login nahi hua: ' + (e.code === 'permission-denied' ? 'Firestore rules allow nahi kar rahe' : e.message));
+  }
+};
+
+function showMain() {
+  $('loginBox').classList.add('hidden');
+  $('mainBox').classList.remove('hidden');
+  const n = me.name || me.id;
+  $('rName').textContent = n;
+  $('avatar').textContent = String(n).trim().charAt(0).toUpperCase() || 'R';
+  listenOrders();
+}
+
+window.logout = function () {
+  stopShare();
+  if (unsubOrders) unsubOrders();
+  localStorage.removeItem('riderLogin');
+  me = null;
+  $('mainBox').classList.add('hidden');
+  $('loginBox').classList.remove('hidden');
+};
+
+window.startShare = async function () {
+  if (!navigator.geolocation) { $('gpsInfo').textContent = 'Is phone mein location support nahi hai'; return; }
+  if (!window.isSecureContext) {
+    $('gpsInfo').textContent = 'Yeh page https website se khulna chahiye (file se location nahi chalti).';
+    return;
+  }
+  $('gpsInfo').textContent = 'Location dhoondi ja rahi hai...';
+  try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (e) {}
+  watchId = navigator.geolocation.watchPosition(onPos, onPosErr, { enableHighAccuracy: true, maximumAge: 5000, timeout: 20000 });
+  $('startBtn').classList.add('hidden');
+  $('stopBtn').classList.remove('hidden');
+};
+
+async function onPos(p) {
+  const now = Date.now();
+  if (now - lastSent < 5000) return;
+  lastSent = now;
+  const c = p.coords;
+  try {
+    await setDoc(doc(db, BASE + "/riders", me.id), {
+      lat: c.latitude, lng: c.longitude, speed: c.speed || 0,
+      sharing: true, lastMs: now, updatedAt: serverTimestamp()
+    }, { merge: true });
+    setStatus(true);
+    $('gpsInfo').textContent = 'Location ja rahi hai ✅ ' + new Date().toLocaleTimeString();
+  } catch (e) {
+    $('gpsInfo').textContent = 'Location bhejne mein masla: ' + e.message;
+  }
+}
+
+function onPosErr(e) {
+  setStatus(false);
+  $('gpsInfo').textContent = e.code === 1
+    ? 'Location ki permission band hai. Browser settings mein Location "Allow" karein.'
+    : 'Location nahi mil rahi: ' + e.message;
+}
+
+window.stopShare = async function () {
+  if (watchId != null) { navigator.geolocation.clearWatch(watchId); watchId = null; }
+  try { if (wakeLock) { await wakeLock.release(); wakeLock = null; } } catch (e) {}
+  if (me) { try { await setDoc(doc(db, BASE + "/riders", me.id), { sharing: false }, { merge: true }); } catch (e) {} }
+  setStatus(false);
+  $('startBtn').classList.remove('hidden');
+  $('stopBtn').classList.add('hidden');
+  $('gpsInfo').textContent = 'Location band hai.';
+};
+
+function listenOrders() {
+  if (unsubOrders) unsubOrders();
+  const q = query(collection(db, BASE + "/orders"), where("riderId", "==", me.id));
+  unsubOrders = onSnapshot(q, snap => {
+    const list = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      .filter(o => String(o.status || '').toLowerCase() === 'dispatched');
+    $('ocount').textContent = list.length;
+    if (!list.length) { $('orders').innerHTML = '<div class="empty"><span class="big">🛵</span>Abhi koi order nahi</div>'; return; }
+    $('orders').innerHTML = list.map(o => {
+      const phone = o.phone || o.customerPhone || o.from || '';
+      const addr = o.addr || o.address || '';
+      const amount = Number(o.amount ?? o.total ?? o.totalAmount ?? 0).toLocaleString();
+      const map = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(addr + ' ' + (o.area || ''));
+      return `<div class="order">
+        <div class="o1"><span class="onum">${esc(o.num || o.orderNumber || o.id)}</span><span class="oamt">PKR ${esc(amount)}</span></div>
+        <div class="ocust">👤 ${esc(o.name || o.customerName || 'Customer')}</div>
+        <div class="oaddr">📍 ${esc(addr)} ${esc(o.area || '')}</div>
+        <div class="acts">
+          ${phone ? `<a class="call" href="tel:${esc(phone)}">📞 Call</a>` : '<span></span>'}
+          ${addr ? `<a class="nav" href="${map}" target="_blank" rel="noopener">🗺️ Map</a>` : '<span></span>'}
+        </div>
+        <button class="done" onclick="markDelivered('${esc(o.id)}')">✅ Delivered</button>
+      </div>`;
+    }).join('');
+  }, e => { $('orders').innerHTML = '<div class="empty">Orders load nahi hue: ' + esc(e.message) + '</div>'; });
+}
+
+window.markDelivered = async function (id) {
+  if (!confirm('Order deliver ho gaya?')) return;
+  try { await setDoc(doc(db, BASE + "/orders", id), { status: 'delivered' }, { merge: true }); }
+  catch (e) { alert('Update nahi hua: ' + e.message); }
+};
+
+try {
+  const s = JSON.parse(localStorage.getItem('riderLogin') || 'null');
+  if (s) { $('phone').value = s.phone; $('pin').value = s.pin; window.doLogin(); }
+} catch (e) {}
+</script>
+</body>
+</html>
