@@ -78,6 +78,11 @@
   .empty .big{font-size:34px;display:block;margin-bottom:6px}
   .foot{text-align:center;color:#51617f;font-size:11px;margin-top:8px}
 </style>
+<link rel="manifest" href="rider-manifest.json">
+<meta name="theme-color" content="#d97706">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="rider-icon-192.png">
 </head>
 <body>
 
@@ -392,6 +397,9 @@ try {
   const s = JSON.parse(localStorage.getItem('riderLogin') || 'null');
   if (s) { $('phone').value = s.phone; $('pin').value = s.pin; window.doLogin(); }
 } catch (e) {}
+</script>
+<script>
+if ('serviceWorker' in navigator) { window.addEventListener('load', function () { navigator.serviceWorker.register('rider-sw.js').catch(function () {}); }); }
 </script>
 </body>
 </html>
