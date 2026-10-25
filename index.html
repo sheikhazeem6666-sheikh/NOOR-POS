@@ -184,7 +184,9 @@
     .social-tt { background:#000; }
     .social-yt { background:#ff0000; }
     .social-ig { background:linear-gradient(45deg,#f9ce34,#ee2a7b,#6228d7); }
-  </style>
+    .rider-mk { transition: transform 1.2s linear; }
+  .leaflet-zoom-anim .rider-mk { transition: none; }
+</style>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 
@@ -545,6 +547,51 @@
   </style>
 </head>
 <body>
+  <!-- OWNER PIN LOCK -->
+  <div id="owner-lock" style="position:fixed;inset:0;z-index:2147483647;background:#0f172a;display:flex;align-items:center;justify-content:center;padding:20px;font-family:system-ui,-apple-system,sans-serif;">
+    <div style="background:#fff;border-radius:16px;padding:28px 24px;width:100%;max-width:340px;text-align:center;">
+      <div style="font-size:34px;">🔒</div>
+      <div style="font-weight:800;font-size:17px;margin:6px 0 2px;">Karachi Noor Biryani</div>
+      <div style="font-size:12px;color:#64748b;margin-bottom:16px;">Owner PIN darj karein</div>
+      <input id="owner-pin" type="password" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="••••••" style="width:100%;padding:12px;font-size:22px;letter-spacing:8px;text-align:center;border:1px solid #cbd5e1;border-radius:10px;">
+      <div id="owner-pin-err" style="color:#e11d48;font-size:12px;min-height:18px;margin:8px 0;"></div>
+      <button id="owner-pin-btn" style="width:100%;padding:12px;border:0;border-radius:10px;background:#d97706;color:#fff;font-weight:800;font-size:14px;cursor:pointer;">Kholein</button>
+    </div>
+  </div>
+  <script>
+  (function () {
+    var HASH = '4a8eec4925826f4b60526d7ac3c0a9b61ef54ac19233bafce2f4a13eb49395d2';
+    var KEY = 'noor_owner_unlock', HOURS = 12;
+    var lock = document.getElementById('owner-lock');
+    function unlocked() {
+      try { var t = parseInt(localStorage.getItem(KEY) || '0', 10); return t && (Date.now() - t) < HOURS * 3600000; } catch (e) { return false; }
+    }
+    function open() { lock.style.display = 'none'; document.documentElement.style.overflow = ''; }
+    if (unlocked()) { open(); return; }
+    document.documentElement.style.overflow = 'hidden';
+    var fails = 0, blockedUntil = 0;
+    var inp = document.getElementById('owner-pin'), err = document.getElementById('owner-pin-err');
+    async function sha(s) {
+      var b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
+      return Array.from(new Uint8Array(b)).map(function (x) { return x.toString(16).padStart(2, '0'); }).join('');
+    }
+    async function tryPin() {
+      if (Date.now() < blockedUntil) { err.textContent = 'Thori der ruk kar dobara koshish karein'; return; }
+      var h = await sha(inp.value.trim());
+      if (h === HASH) {
+        try { localStorage.setItem(KEY, String(Date.now())); } catch (e) {}
+        open();
+      } else {
+        fails++; inp.value = '';
+        if (fails >= 3) { blockedUntil = Date.now() + 30000; fails = 0; err.textContent = '3 galat koshishein. 30 second ruk jayein.'; }
+        else err.textContent = 'Galat PIN';
+      }
+    }
+    document.getElementById('owner-pin-btn').onclick = tryPin;
+    inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') tryPin(); });
+    setTimeout(function () { inp.focus(); }, 100);
+  })();
+  </script>
   <!-- Top Bar -->
   <header style="background: #fff; border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; z-index: 50;">
     <div class="container" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 16px;">
@@ -552,7 +599,7 @@
         <div style="background: #d97706; color: #fff; font-weight: 800; padding: 6px 10px; border-radius: 8px; font-size: 14px;">NB</div>
         <div>
           <div style="font-weight: 800; font-size: 15px;">Karachi Noor Biryani & Murgh Pulao</div>
-          <div style="font-size: 11px; color: #64748b;">Saidpur Road Rawalpindi · Main Branch (Pandora Chungi) · v80</div>
+          <div style="font-size: 11px; color: #64748b;">Saidpur Road Rawalpindi · Main Branch (Pandora Chungi) · v83</div>
         </div>
       </div>
       <div style="display: flex; align-items: center; gap: 8px;">
@@ -1061,6 +1108,7 @@
             <div style="font-weight: 800; font-size: 14px;">🗺️ Live Rider Tracking Map</div>
             <div style="display:flex; gap:6px; align-items:center;">
               <span class="badge" style="background: #d1fae5; color: #065f46;">${activeRiders} RIDERS LIVE</span>
+              <button id="follow-btn" class="btn btn-sm btn-outline" onclick="toggleFollow()">${followRider ? '🎯 Follow: ON' : '🎯 Follow'}</button>
               <button class="btn btn-sm btn-outline" onclick="findPlaceOnMap()">🔎 Jagah dhoondo</button>
               <button id="rest-btn" class="btn btn-sm btn-outline" onclick="toggleSetRest()">📍 Restaurant ki location set karo</button>
               ${fbRiders.length === 0 ? '<button class="btn btn-sm btn-outline" onclick="toggleMap()">✖ Band</button>' : ''}
@@ -2106,7 +2154,7 @@
 
     // Modal & Print Actions
     // ---- RIDERS + REAL MAP ----
-    let riderErr = '', fbRiders = [], riderMap = null, mapEl = null, riderMarkers = {}, restMarker = null, settingRest = false, mapFitted = false;
+    let riderErr = '', fbRiders = [], riderMap = null, mapEl = null, riderMarkers = {}, restMarker = null, settingRest = false, mapFitted = false, riderTrails = {}, riderLines = {}, riderKeys = {}, followRider = false;
 
     function riderOnline(r) { return r.sharing !== false && r.lat != null && r.lastMs && (Date.now() - r.lastMs) < 120000; }
 
@@ -2133,6 +2181,13 @@
         html: '<div style="position:relative;"><div style="position:absolute;left:-14px;top:-14px;font-size:26px;">🍛</div><div style="position:absolute;left:14px;top:-10px;white-space:nowrap;background:#d97706;color:#fff;font:700 11px system-ui;padding:2px 6px;border-radius:6px;">Noor Biryani</div></div>' }) }).addTo(riderMap);
     }
 
+    function toggleFollow() {
+      followRider = !followRider;
+      const b = document.getElementById('follow-btn');
+      if (b) b.textContent = followRider ? '🎯 Follow: ON' : '🎯 Follow';
+      if (followRider) updateRiderMarkers();
+    }
+
     function updateRiderMarkers() {
       if (!riderMap) return;
       const seen = {};
@@ -2144,13 +2199,26 @@
         const color = on ? '#0ea5e9' : '#94a3b8';
         const kmh = (on && r.speed) ? Math.round(r.speed * 3.6) : 0;
         const label = khEsc(r.name) + (on ? ' · ' + kmh + ' km/h' : ' · offline');
-        const icon = L.divIcon({ className: '', iconSize: [0, 0],
+        const icon = L.divIcon({ className: 'rider-mk', iconSize: [0, 0],
           html: '<div style="position:relative;"><div style="position:absolute;left:-8px;top:-8px;width:16px;height:16px;border-radius:50%;background:' + color + ';border:2px solid #fff;box-shadow:0 0 0 2px ' + color + '66;"></div><div style="position:absolute;left:12px;top:-10px;white-space:nowrap;background:#0f172acc;color:#fff;font:700 11px system-ui;padding:2px 6px;border-radius:6px;">' + label + '</div></div>' });
-        if (riderMarkers[r.id]) { riderMarkers[r.id].setLatLng([r.lat, r.lng]); riderMarkers[r.id].setIcon(icon); }
-        else riderMarkers[r.id] = L.marker([r.lat, r.lng], { icon }).addTo(riderMap);
+        const key = color + '|' + label;
+        if (riderMarkers[r.id]) {
+          riderMarkers[r.id].setLatLng([r.lat, r.lng]);
+          if (riderKeys[r.id] !== key) riderMarkers[r.id].setIcon(icon);
+        } else riderMarkers[r.id] = L.marker([r.lat, r.lng], { icon }).addTo(riderMap);
+        riderKeys[r.id] = key;
+        // Raasta (trail): sirf online rider ke peeche line
+        if (on) {
+          const tr = riderTrails[r.id] || (riderTrails[r.id] = []);
+          const last = tr[tr.length - 1];
+          if (!last || Math.abs(last[0] - r.lat) > 0.00003 || Math.abs(last[1] - r.lng) > 0.00003) { tr.push([r.lat, r.lng]); if (tr.length > 80) tr.shift(); }
+          if (riderLines[r.id]) riderLines[r.id].setLatLngs(tr);
+          else riderLines[r.id] = L.polyline(tr, { color: '#0ea5e9', weight: 4, opacity: 0.55 }).addTo(riderMap);
+          if (followRider && riderMap) riderMap.panTo([r.lat, r.lng], { animate: true, duration: 1 });
+        }
         if (on) pts.push([r.lat, r.lng]);
       });
-      Object.keys(riderMarkers).forEach(id => { if (!seen[id]) { riderMap.removeLayer(riderMarkers[id]); delete riderMarkers[id]; } });
+      Object.keys(riderMarkers).forEach(id => { if (!seen[id]) { riderMap.removeLayer(riderMarkers[id]); delete riderMarkers[id]; if (riderLines[id]) { riderMap.removeLayer(riderLines[id]); delete riderLines[id]; } delete riderTrails[id]; delete riderKeys[id]; } });
       if (!mapFitted && pts.length) {
         if (appData.restLoc) pts.push([appData.restLoc.lat, appData.restLoc.lng]);
         riderMap.fitBounds(pts, { padding: [40, 40], maxZoom: 16 });
