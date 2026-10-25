@@ -445,7 +445,7 @@
     html[data-theme="dark"] .msg-search { background: #202c33; color: #e9edef; }
     html[data-theme="dark"] .msg-reply .btn-primary { background: #00a884; border-color: #00a884; }
     /* ---- v65: WhatsApp Desktop jaisa poori screen ---- */
-    .msg-wrap.full { position: fixed !important; inset: 0; z-index: 1000; height: 100vh !important; width: 100vw; border-radius: 0 !important; margin: 0 !important; grid-template-columns: 380px 1fr; background: #fff; }
+    .msg-wrap.full { position: fixed !important; inset: auto; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; width: 99vw !important; height: 98vh !important; max-height: 98vh !important; border-radius: 12px !important; margin: 0 !important; grid-template-columns: 300px 1fr; background: #fff; box-shadow: 0 0 0 100vmax rgba(15,23,42,.5); }
     html[data-theme="dark"] .msg-wrap.full { background: #111b21; }
     .msg-chips { display: flex; gap: 8px; padding: 0 12px 8px; }
     .msg-chips .chip { padding: 5px 14px; border-radius: 999px; background: #f0f2f5; color: #54656f; font-size: 13px; font-weight: 700; cursor: pointer; }
@@ -490,6 +490,58 @@
     .msg-reply textarea { border-radius: 22px; padding: 10px 18px; min-height: 42px; max-height: 120px; line-height: 1.4; font-size: 15px; }
     .msg-reply .msg-ico { color: #54656f; }
     .msg-reply .msg-send { flex: 0 0 44px; width: 44px; height: 44px; padding: 0 !important; border-radius: 50% !important; background: #00a884 !important; border-color: #00a884 !important; color: #fff !important; font-size: 18px !important; }
+
+    /* ---- v69: Messages ka header/footer patla, side bar tang ---- */
+    .msg-wrap.full { grid-template-columns: 220px 1fr !important; }
+    .msg-wrap.full .msg-lh-top { padding: 6px 8px !important; gap: 6px; }
+    .msg-wrap.full .msg-nb { flex-basis: 30px; width: 30px; height: 30px; font-size: 12px; }
+    .msg-wrap.full .msg-lh-t { font-size: 14px !important; }
+    .msg-wrap.full .msg-lh-s { font-size: 11px; }
+    .msg-wrap.full .msg-bell { width: 28px; height: 28px; font-size: 14px; }
+    .msg-wrap.full .msg-search { margin: 4px 8px; width: calc(100% - 16px); padding: 5px 12px; font-size: 13px; }
+    .msg-wrap.full .msg-chips { padding: 0 8px 4px; }
+    .msg-wrap.full .msg-chips .chip { padding: 3px 10px; font-size: 12px; }
+    .msg-wrap.full .msg-row { padding: 6px 8px; gap: 8px; }
+    .msg-wrap.full .msg-av { flex-basis: 38px; width: 38px; height: 38px; font-size: 16px; }
+    .msg-wrap.full .msg-row .nm { font-size: 13.5px; }
+    .msg-wrap.full .msg-row .nm .tm { font-size: 10.5px; }
+    .msg-wrap.full .msg-row .l2 .pv { font-size: 12.5px; }
+    .msg-wrap.full .msg-head { padding: 4px 12px !important; }
+    .msg-wrap.full .msg-av.sm { flex-basis: 30px; width: 30px; height: 30px; font-size: 14px; }
+    .msg-wrap.full .msg-win { margin-top: 0; font-size: 11.5px; }
+    .msg-wrap.full .msg-reply { padding: 4px 10px !important; }
+    .msg-wrap.full .msg-reply textarea { min-height: 36px; padding: 7px 14px; }
+    .msg-wrap.full .msg-ico { width: 36px; height: 36px; font-size: 17px; }
+    .msg-wrap.full .msg-reply .msg-send { flex-basis: 36px; width: 36px; height: 36px; }
+    .msg-wrap.full .msg-foot { padding: 3px 10px; font-size: 11px; gap: 6px; }
+    .msg-wrap.full .msg-foot .btn { padding: 3px 9px; font-size: 11.5px; }
+
+    /* ---- v70: bilkul WhatsApp Desktop jaisa size ---- */
+    .msg-wrap.full { grid-template-columns: clamp(300px, 28vw, 400px) 1fr !important; }
+    .msg-wrap.full .msg-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 6px 16px !important; }
+    .msg-hr { display: flex; align-items: center; gap: 6px; flex-wrap: nowrap; white-space: nowrap; }
+    .msg-hr .btn { padding: 4px 10px; font-size: 12px; }
+    .msg-hr .msg-win { font-size: 12px; margin: 0 6px 0 0; }
+    .msg-wrap.full .msg-lh-top { padding: 10px 14px !important; }
+    .msg-wrap.full .msg-nb { flex-basis: 40px; width: 40px; height: 40px; font-size: 15px; }
+    .msg-wrap.full .msg-lh-t { font-size: 17px !important; }
+    .msg-wrap.full .msg-lh-s { font-size: 12px; }
+    .msg-wrap.full .msg-bell { width: 36px; height: 36px; font-size: 18px; }
+    .msg-wrap.full .msg-search { margin: 8px 12px; width: calc(100% - 24px); padding: 8px 14px; font-size: 14px; }
+    .msg-wrap.full .msg-chips { padding: 0 12px 8px; }
+    .msg-wrap.full .msg-chips .chip { padding: 5px 14px; font-size: 13px; }
+    .msg-wrap.full .msg-row { padding: 10px 14px; gap: 12px; }
+    .msg-wrap.full .msg-av { flex-basis: 48px; width: 48px; height: 48px; font-size: 20px; }
+    .msg-wrap.full .msg-row .nm { font-size: 15px; }
+    .msg-wrap.full .msg-row .nm .tm { font-size: 11.5px; }
+    .msg-wrap.full .msg-row .l2 .pv { font-size: 13.5px; }
+    .msg-wrap.full .msg-av.sm { flex-basis: 40px; width: 40px; height: 40px; font-size: 17px; }
+    .msg-wrap.full .msg-flow { padding: 10px 20px; }
+    .msg-wrap.full .msg-b { max-width: 65%; }
+    .msg-wrap.full .msg-reply { padding: 8px 14px !important; }
+    .msg-wrap.full .msg-reply textarea { min-height: 42px; padding: 10px 16px; font-family: inherit; }
+    .msg-wrap.full .msg-ico { width: 44px; height: 44px; font-size: 20px; }
+    .msg-wrap.full .msg-reply .msg-send { flex-basis: 44px; width: 44px; height: 44px; }
   </style>
 </head>
 <body>
@@ -500,7 +552,7 @@
         <div style="background: #d97706; color: #fff; font-weight: 800; padding: 6px 10px; border-radius: 8px; font-size: 14px;">NB</div>
         <div>
           <div style="font-weight: 800; font-size: 15px;">Karachi Noor Biryani & Murgh Pulao</div>
-          <div style="font-size: 11px; color: #64748b;">Saidpur Road Rawalpindi · Main Branch (Pandora Chungi) · v68</div>
+          <div style="font-size: 11px; color: #64748b;">Saidpur Road Rawalpindi · Main Branch (Pandora Chungi) · v80</div>
         </div>
       </div>
       <div style="display: flex; align-items: center; gap: 8px;">
@@ -522,6 +574,8 @@
         <button class="nav-btn" id="btn-staff" onclick="setTab('staff')"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.3c2.2.7 3.5 2.6 3.5 5.7"/></svg><span>Staff</span></button>
         <button class="nav-btn" id="btn-prints" onclick="setTab('prints')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="9" rx="2"/><path d="M7 14h10v7H7z"/></svg><span>Print History</span></button>
         <button class="nav-btn" id="btn-messages" onclick="setTab('messages')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg><span>Messages</span><span id="msg-nav-badge" style="display:none;background:#e11d48;color:#fff;border-radius:999px;font-size:10px;padding:1px 6px;"></span></button>
+        <button class="nav-btn" id="btn-tables" onclick="setTab('tables')"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="9" width="18" height="3" rx="1"/><path d="M6 12v8M18 12v8"/></svg><span>Tables</span></button>
+        <button class="nav-btn" id="btn-cctv" onclick="setTab('cctv')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8l13-3 2 6-13 3z"/><path d="M18 11l3 1v3l-3-1"/><path d="M8 15v5"/></svg><span>CCTV</span></button>
       </nav>
     </div>
   </header>
@@ -551,6 +605,8 @@
 
     <!-- VIEW 9: MESSAGES (naya WhatsApp number) -->
     <div id="view-messages" class="tab-view" style="display: none;"></div>
+    <div id="view-tables" class="tab-view" style="display: none;"><div style="padding:40px;text-align:center;font-weight:800;font-size:18px;">🪑 Tables, Coming soon</div></div>
+    <div id="view-cctv" class="tab-view" style="display: none;"><div style="padding:40px;text-align:center;font-weight:800;font-size:18px;">📹 CCTV, Coming soon</div></div>
   </main>
 
   <!-- Modals & Print Area -->
@@ -853,6 +909,24 @@
       if (o.source && /whatsapp/i.test(o.source)) return 'WhatsApp';
       return 'Delivery';
     }
+    // ---- Rider ka jawab (accept / reject) ----
+    function riderReplyHtml(o) {
+      const sm = 'font-size:10px;font-weight:700;';
+      if (o.riderRejected && !o.riderId) return '<br><span style="' + sm + 'color:#e11d48;">❌ ' + khEsc(o.rejectedByName || 'Rider') + ' ne reject kiya</span><br><span style="font-size:10px;color:#64748b;">Naya rider bhejein</span>';
+      if (!o.rider) return '';
+      let t = '<br><span style="font-size:10px;color:#64748b;">🏍️ ' + khEsc(o.rider) + '</span>';
+      if (o.status === 'dispatched') t += o.riderAccepted ? '<br><span style="' + sm + 'color:#059669;">✅ Accept kiya</span>' : '<br><span style="' + sm + 'color:#d97706;">⏳ Jawab ka intezar</span>';
+      return t;
+    }
+    function riderReplyAlerts(changes, prevMap) {
+      changes.forEach(c => {
+        if (c.type !== 'modified') return;
+        const o = normalizeOrder(c.doc.id, c.doc.data());
+        const p = prevMap.get(o.id) || {};
+        if (o.riderRejected && !p.riderRejected) uiToast('❌ ' + (o.rejectedByName || 'Rider') + ' ne order ' + o.num + ' reject kar diya. Naya rider bhejein.', 'err');
+        else if (o.riderAccepted && !p.riderAccepted) uiToast('✅ ' + (o.rider || 'Rider') + ' ne order ' + o.num + ' accept kar liya', 'ok');
+      });
+    }
     function setOrdFilter(k) { ordFilter = k; renderDashboard(); }
     function toggleMap() { mapVisible = !mapVisible; renderDashboard(); }
     function renderOrdersTable() {
@@ -882,10 +956,10 @@
             <td style="max-width:200px;font-size:11px;color:#475569;">${items ? khEsc(items) : '<span style="color:#cbd5e1;">—</span>'}</td>
             <td style="font-weight:800;color:#d97706;white-space:nowrap;">PKR ${o.amount.toLocaleString()}</td>
             <td style="font-size:11px;">${o.payment ? khEsc(o.payment) : '<span style="color:#cbd5e1;">—</span>'}</td>
-            <td><span class="badge badge-${khEsc(o.status)}">${khEsc(o.status)}</span>${o.rider ? '<br><span style="font-size:10px;color:#64748b;">🏍️ ' + khEsc(o.rider) + '</span>' : ''}</td>
+            <td><span class="badge badge-${khEsc(o.status)}">${khEsc(o.status)}</span>${riderReplyHtml(o)}</td>
             <td style="text-align:right;">
               <div style="display:inline-flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;">
-                ${open && !isCounter ? `<button class="btn btn-sm btn-primary" onclick="assignRiderPrompt('${o.id}')">${o.rider ? 'Rider Badlo' : 'Rider Bhejo'}</button>` : ''}
+                ${open && !isCounter ? `<button class="btn btn-sm btn-primary" onclick="assignRiderPrompt('${o.id}')">${(o.rider && !(o.riderRejected && !o.riderId)) ? 'Rider Badlo' : 'Rider Bhejo'}</button>` : ''}
                 ${o.status === 'dispatched' && o.riderId ? `<button class="btn btn-sm btn-outline" onclick="openRiderOnGoogle('${khEsc(o.riderId)}')">📍 Rider</button>` : ''}
                 ${!isCounter && o.addr ? `<a class="btn btn-sm btn-outline" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(o.addr + ' Rawalpindi')}">🗺️ Address</a>` : ''}
                 ${open ? `<button class="btn btn-sm btn-outline" style="color:#047857;border-color:#a7f3d0;" onclick="completeOrder('${o.id}')">✔ Complete</button>` : ''}
@@ -2178,44 +2252,6 @@
         localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
       }).catch(e => console.warn('Sheet send failed:', e));
     }
-    // ---- Naye order ki ghanti (dashboard) ----
-    let _ordFirst = true, _ordTimer = null, _ordAC = null;
-    function _ordBell() {
-      try {
-        if (!_ordAC) _ordAC = new (window.AudioContext || window.webkitAudioContext)();
-        if (_ordAC.state === 'suspended') _ordAC.resume();
-        const ac = _ordAC, t0 = ac.currentTime + 0.02;
-        [[880, 0], [1320, .22], [880, .5], [1320, .72]].forEach(([f, st]) => {
-          const o = ac.createOscillator(), g = ac.createGain();
-          o.type = 'triangle'; o.frequency.value = f;
-          g.gain.setValueAtTime(0.0001, t0 + st);
-          g.gain.exponentialRampToValueAtTime(0.5, t0 + st + 0.02);
-          g.gain.exponentialRampToValueAtTime(0.0001, t0 + st + 0.2);
-          o.connect(g); g.connect(ac.destination); o.start(t0 + st); o.stop(t0 + st + 0.22);
-        });
-      } catch (e) {}
-    }
-    ['click', 'keydown', 'touchstart'].forEach(ev => document.addEventListener(ev, () => { try { if (!_ordAC) _ordAC = new (window.AudioContext || window.webkitAudioContext)(); if (_ordAC.state === 'suspended') _ordAC.resume(); } catch (e) {} }, { passive: true }));
-    function stopOrderBell() {
-      if (_ordTimer) { clearInterval(_ordTimer); _ordTimer = null; }
-      const b = document.getElementById('ord-alert'); if (b) b.remove();
-      document.title = document.title.replace(/^🔔 /, '');
-    }
-    function newOrderAlert(changes) {
-      if (_ordFirst) { _ordFirst = false; return; }
-      const fresh = changes.filter(c => c.type === 'added').map(c => normalizeOrder(c.doc.id, c.doc.data()))
-        .filter(o => String(o.status || 'pending').toLowerCase() === 'pending' && o.type !== 'Counter' && o.source !== 'dashboard-whatsapp');
-      if (!fresh.length) return;
-      stopOrderBell();
-      const d = document.createElement('div'); d.id = 'ord-alert';
-      d.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:100000;background:#dc2626;color:#fff;padding:14px 16px;display:flex;align-items:center;gap:12px;font-weight:800;font-size:15px;box-shadow:0 6px 20px rgba(0,0,0,.35);';
-      d.innerHTML = '<span style="font-size:22px;">🔔</span><span style="flex:1;">Naya order: ' + khEsc(fresh.map(o => o.num || o.id).join(', ')) + '</span><button style="background:#fff;color:#dc2626;border:0;border-radius:8px;padding:8px 14px;font-weight:800;" onclick="stopOrderBell()">Dekh liya</button>';
-      document.body.appendChild(d);
-      document.title = '🔔 ' + document.title;
-      let n = 0; _ordBell();
-      _ordTimer = setInterval(() => { if (++n > 30) stopOrderBell(); else _ordBell(); }, 3000);
-    }
-
     function onOrdersChanged(changes) {
       if (!sheetOn()) return;
       const sy = appData.sheetSynced || {};
@@ -2330,9 +2366,9 @@
       const o = appData.orders.find(x => x.id === orderId);
       const r = fbRiders.find(x => x.id === riderId);
       if (!o || !r) return;
-      o.status = 'dispatched'; o.rider = r.name; o.riderId = r.id;
+      o.status = 'dispatched'; o.rider = r.name; o.riderId = r.id; o.riderAccepted = false; o.riderRejected = false;
       saveData();
-      if (window.updateOrderInFirestore) window.updateOrderInFirestore(o.id, { status: 'dispatched', rider: r.name, riderId: r.id }).catch(e => console.warn(e));
+      if (window.updateOrderInFirestore) window.updateOrderInFirestore(o.id, { status: 'dispatched', rider: r.name, riderId: r.id, riderAccepted: false, riderRejected: false }).catch(e => console.warn(e));
       closeKhataForm(); renderDashboard();
     }
 
@@ -3344,12 +3380,12 @@
     };
     // v64: chat poori screen tak khule
     let msgFull = true, msgFilter = 'all';
-    try { msgFull = localStorage.getItem('noorMsgFull') !== 'off'; } catch (e) {}
-    function toggleMsgFull() { msgFull = !msgFull; try { localStorage.setItem('noorMsgFull', msgFull ? 'on' : 'off'); } catch (e) {} const w = document.querySelector('.msg-wrap'); if (w) w.style.height = ''; renderMessages(true); }
+    try { msgFull = localStorage.getItem('noorMsgFull2') !== 'off'; } catch (e) {}
+    function toggleMsgFull() { msgFull = !msgFull; try { localStorage.setItem('noorMsgFull2', msgFull ? 'on' : 'off'); } catch (e) {} const w = document.querySelector('.msg-wrap'); if (w) w.style.height = ''; renderMessages(true); }
     function setMsgFilter(f) { msgFilter = f; renderMessages(true); }
     function fitMsgWrap() {
       const w = document.querySelector('.msg-wrap'); if (!w || (!w.offsetParent && !msgFull)) return;
-      if (msgFull) { w.style.height = '100vh'; w.style.maxHeight = 'none'; return; }
+      if (msgFull) { w.style.height = ''; w.style.maxHeight = ''; return; }
       const top = w.getBoundingClientRect().top;
       w.style.height = Math.max(420, window.innerHeight - top - 12) + 'px';
       w.style.maxHeight = 'none';
@@ -3521,13 +3557,13 @@
       if (!m || !m.mediaId) return '';
       const id = String(m.mediaId), mime = String(m.mime || ''), url = window._mediaUrls[id];
       if (url) {
-        if (mime.indexOf('image') === 0) return '<div style="margin-top:6px;"><img src="' + url + '" style="max-width:260px;max-height:320px;width:auto;height:auto;object-fit:contain;border-radius:8px;display:block;"></div>';
-        if (mime.indexOf('video') === 0) return '<div style="margin-top:6px;"><video controls preload="metadata" src="' + url + '" style="max-width:260px;max-height:320px;width:auto;height:auto;object-fit:contain;border-radius:8px;display:block;background:#000;"></video></div>';
+        if (mime.indexOf('image') === 0) return '<div style="margin-top:6px;"><img src="' + url + '" style="max-width:min(360px,100%);max-height:420px;width:auto;height:auto;object-fit:contain;border-radius:8px;display:block;"></div>';
+        if (mime.indexOf('video') === 0) return '<div style="margin-top:6px;"><video controls preload="metadata" src="' + url + '" style="max-width:min(360px,100%);max-height:420px;width:auto;height:auto;object-fit:contain;border-radius:8px;display:block;background:#000;"></video></div>';
         if (mime.indexOf('audio') === 0) return '<div style="margin-top:6px;"><audio controls data-mid="' + khEsc(id) + '" src="' + url + '" style="max-width:100%;"></audio></div>';
         return '<div style="margin-top:6px;"><a href="' + url + '" target="_blank" rel="noopener">📎 File kholein</a></div>';
       }
-      const label = window._mediaBusy[id] ? '⏳ Load ho raha hai…' : (mime.indexOf('audio') === 0 ? '▶️ Sunein' : mime.indexOf('image') === 0 ? '🖼️ Dekhein' : mime.indexOf('video') === 0 ? '🎬 Dekhein' : '📎 Kholein');
-      return '<div style="margin-top:6px;"><button type="button" data-mediaid="' + khEsc(id) + '" onclick="loadInboxMedia(this.getAttribute(\'data-mediaid\'))" style="padding:6px 12px;border:1px solid #94a3b8;border-radius:8px;background:#f1f5f9;color:#0f172a;font-size:13px;cursor:pointer;">' + label + '</button></div>';
+      const label = window._mediaBusy[id] ? '⏳ Load ho raha hai…' : window._mediaFail[id] ? '⚠️ Dobara koshish' : (mime.indexOf('audio') === 0 ? '▶️ Sunein' : mime.indexOf('image') === 0 ? '🖼️ Dekhein' : mime.indexOf('video') === 0 ? '🎬 Dekhein' : '📎 Kholein');
+      return '<div style="margin-top:6px;"><button type="button" data-mediaid="' + khEsc(id) + '" onclick="loadInboxMedia(this.getAttribute(\'data-mediaid\'))" style="padding:6px 12px;border:1px solid #94a3b8;border-radius:8px;background:#f1f5f9;color:#0f172a;font-size:13px;cursor:pointer;">' + label + '</button>' + (window._mediaFail[id] && window._mediaErr[id] ? '<div style="font-size:12px;color:#be123c;margin-top:4px;">' + khEsc(window._mediaErr[id]) + '<br>Bari video phone ki Business app se dekhein.</div>' : '') + '</div>';
     }
     async function deleteInboxMsg(btn) {
       const docId = btn.getAttribute('data-docid');
@@ -3536,21 +3572,53 @@
       try { await window.deleteInboxMsgDoc(msgSel, docId); }
       catch (e) { alert('Delete nahi ho saka. Firestore rules ijazat nahi de rahe.\n' + (e && e.message ? e.message : '')); }
     }
-    async function loadInboxMedia(id) {
+    window._mediaFail = window._mediaFail || {}; window._mediaErr = window._mediaErr || {};
+    async function loadInboxMedia(id, auto) {
       if (!id || window._mediaBusy[id]) return;
       const cfg = inboxCfg();
-      if (!cfg.url || !cfg.key) { msgCfgOpen = true; renderMessages(true); uiToast('Pehle neeche setting bhar lein'); return; }
+      if (!cfg.url || !cfg.key) { if (auto) return; msgCfgOpen = true; renderMessages(true); uiToast('Pehle neeche setting bhar lein'); return; }
+      delete window._mediaFail[id]; delete window._mediaErr[id];
       window._mediaBusy[id] = true; renderMessages(true);
+      const ctl = new AbortController();
+      const tmo = setTimeout(() => ctl.abort(), 240000); // 4 minute
       try {
-        const r = await fetch(cfg.url + '/inbox/media/' + encodeURIComponent(id), { headers: { 'x-inbox-key': cfg.key } });
-        if (!r.ok) throw new Error('Error ' + r.status);
-        const b = await r.blob();
+        const r = await fetch(cfg.url + '/inbox/media/' + encodeURIComponent(id), { headers: { 'x-inbox-key': cfg.key }, signal: ctl.signal });
+        if (!r.ok) throw new Error('Server ne error diya (' + r.status + ')');
+        const total = Number(r.headers.get('content-length')) || 0;
+        let b;
+        if (r.body && r.body.getReader) {
+          const rd = r.body.getReader(), parts = []; let got = 0;
+          for (;;) {
+            const x = await rd.read(); if (x.done) break;
+            parts.push(x.value); got += x.value.length;
+            const btn = document.querySelector('button[data-mediaid="' + id + '"]');
+            if (btn) btn.textContent = '⏳ ' + (total ? Math.round(got * 100 / total) + '%' : (got / 1048576).toFixed(1) + ' MB');
+          }
+          b = new Blob(parts, { type: r.headers.get('content-type') || '' });
+        } else { b = await r.blob(); }
         window._mediaUrls[id] = URL.createObjectURL(b);
       } catch (e) {
-        uiToast('❌ ' + (e && e.message === 'Failed to fetch' ? 'Server tak pohanch nahi saka.' : e.message));
+        window._mediaFail[id] = true;
+        const msg = e && e.name === 'AbortError' ? 'Bohat der lag gayi (video shayad bohat bari hai)' : (e && e.message === 'Failed to fetch' ? 'Server tak pohanch nahi saka ya file bohat bari hai' : (e && e.message) || 'Load nahi hui');
+        window._mediaErr[id] = msg;
+        if (!auto) uiToast('❌ ' + msg);
       } finally {
+        clearTimeout(tmo);
         window._mediaBusy[id] = false; renderMessages(true);
-        try { const a = document.querySelector('audio[data-mid="' + id + '"]'); if (a) a.play().catch(() => {}); } catch (e) {}
+        if (!auto) try { const a = document.querySelector('audio[data-mid="' + id + '"]'); if (a) a.play().catch(() => {}); } catch (e) {}
+      }
+    }
+    // v71: photo/video/voice apne aap load hon (WhatsApp ki tarah), aakhri 12 media, ek waqt mein 2
+    function autoLoadMedia() {
+      if (!msgSel || window._inboxMsgsFor !== msgSel) return;
+      const cfg = inboxCfg(); if (!cfg.url || !cfg.key) return;
+      const list = (window._inboxMsgs || []).filter(m => m.mediaId).slice(-12).reverse();
+      let busy = Object.keys(window._mediaBusy).filter(k => window._mediaBusy[k]).length;
+      for (const m of list) {
+        if (busy >= 2) break;
+        const id = String(m.mediaId);
+        if (window._mediaUrls[id] || window._mediaBusy[id] || window._mediaFail[id]) continue;
+        busy++; loadInboxMedia(id, true);
       }
     }
     // v53: ek waqt mein sirf ek voice chale (naya chalne par baqi ruk jayen)
@@ -3573,7 +3641,7 @@
       if (!v) return;
       // v50: agar kuch badla hi nahi to dobara na banayen (isi se chat/click ghaib ho jate the)
       const sig = JSON.stringify([
-        msgSel, msgSearch, msgSending, msgCfgOpen,
+        msgSel, msgSearch, msgSending, msgCfgOpen, window._inboxBotOn,
         window._inboxMsgsFor, window._inboxMsgsState,
         window._inboxChats.map(c => [c.id, c.lastMessage, inboxMs(c.lastMessageAt), inboxMs(c.lastInboundAt), c.unreadCount || 0, c.name || '']),
         (window._inboxMsgsFor === msgSel ? window._inboxMsgs : []).map(m => [m.id, m.text, inboxMs(m.timestamp), m.mediaId || '', m.mediaId ? !!window._mediaUrls[m.mediaId] : 0, m.mediaId ? !!window._mediaBusy[m.mediaId] : 0, m.status || ''])
@@ -3623,7 +3691,12 @@
               <div class="msg-av sm" style="background:${inboxAvColor(msgSel)}">${khEsc(inboxInitial(chat.name, msgSel))}</div><div><div style="font-weight:700;font-size:15px;">${khEsc(chat.name || '+' + msgSel)}</div>
               <div style="font-size:12px;color:#64748b;">+${khEsc(msgSel)}</div></div>
             </div>
-            <div class="msg-win ${w.open ? 'ok' : 'no'}">${w.txt}</div>
+            <div class="msg-hr">
+              <span class="msg-win ${w.open ? 'ok' : 'no'}">${w.txt}</span>
+              <a class="btn btn-sm btn-outline" href="https://wa.me/${khEsc(msgSel)}" target="_blank" rel="noopener">WhatsApp kholein</a>
+              <button class="btn btn-sm btn-primary" onclick="openDeliveryForm()">🛵 Delivery Order</button>
+              <button class="btn btn-sm btn-outline" onclick="toggleMsgCfg()">⚙️</button>
+            </div>
           </div>
           <div class="msg-flow" id="msg-flow">
             ${msgs.length ? (() => { let _ld = ''; return msgs.map(m => { const _ms = inboxMs(m.timestamp); const _d = _ms ? new Date(_ms) : null; const _dk = _d ? _d.toDateString() : ''; let _sep = ''; if (_dk && _dk !== _ld) { _ld = _dk; const _t = new Date(); const _y = new Date(Date.now() - 86400000); _sep = '<div class="msg-day">' + (_dk === _t.toDateString() ? 'Aaj' : _dk === _y.toDateString() ? 'Kal' : _d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })) + '</div>'; } return _sep + `<div class="msg-b ${m.direction === 'out' ? 'out' : 'in'}">${inboxQuoteHtml(m, msgs)}${khEsc(m.text === '[revoke]' ? '🚫 Ye message delete kar diya gaya' : (m.text || ''))}${inboxMediaHtml(m)}
@@ -3642,17 +3715,12 @@
             <button class="msg-ico${msgRecording ? ' rec' : ''}" title="Awaaz record karein" ${msgSending ? 'disabled' : ''} onclick="toggleVoiceRec()">${msgRecording ? '⏹ Bhejein' : '🎤'}</button>
             <button class="btn btn-primary msg-send" title="Bhejein" ${msgSending ? 'disabled' : ''} onclick="sendInboxReply()">${msgSending ? '…' : '➤'}</button>
           </div>` : ''}
-          ${(msgCfgOpen || (w.open && !(inboxCfg().url && inboxCfg().key))) ? `<div class="msg-cfg">
+          ${msgCfgOpen ? `<div class="msg-cfg">
             <div><b>Jawab bhejne ki setting</b> (sirf is device par save hoti hai)</div>
             <input id="msg-cfg-url" class="input" placeholder="Server ka link, jaise https://xxxx.onrender.com" value="${khEsc(msgCfgDraft.url || inboxCfg().url || '')}">
             <input id="msg-cfg-key" class="input" type="password" placeholder="${inboxCfg().key ? 'Password save hai (badalna ho to likhein)' : 'Password'}" value="${khEsc(msgCfgDraft.key || '')}">
             <div><button class="btn btn-sm btn-dark" onclick="saveInboxCfg()">Save karein</button></div>
           </div>` : ''}
-          <div class="msg-foot">
-            ${w.open ? '<span>Jawab yahan se ya phone ki Business app se de sakte hain.</span>' : '<span>24 ghante guzar gaye — yahan se jawab nahi ja sakta. WhatsApp se template bhejein.</span>'}
-            <a class="btn btn-sm btn-outline" href="https://wa.me/${khEsc(msgSel)}" target="_blank" rel="noopener">WhatsApp kholein</a>
-            <button class="btn btn-sm btn-primary" onclick="openDeliveryForm()">🛵 Delivery Order</button>
-            <button class="btn btn-sm btn-outline" onclick="toggleMsgCfg()">⚙️ Setting</button>
           </div>`;
       }
 
@@ -3662,6 +3730,7 @@
             <div class="msg-lh-top">
               <div class="msg-nb">NB</div>
               <div style="flex:1;min-width:0;"><div class="msg-lh-t">Karachi Noor Biryani</div><div class="msg-lh-s">+92 300 5583968</div></div>
+              <button type="button" class="msg-bell" title="AI bot on/off (sab chats ke liye)" onclick="toggleInboxBot()" style="width:auto;padding:0 12px;font-size:13px;border-radius:18px;font-weight:700;background:${window._inboxBotOn ? '#16a34a' : '#64748b'};color:#fff;">${window._inboxBotOn ? '🤖 Bot ON' : '🤖 Bot OFF'}</button>
               <button type="button" class="msg-bell" title="Awaaz on/off" onclick="toggleInboxSound()">${inboxSoundOn() ? '🔔' : '🔕'}</button>
               <button type="button" class="msg-bell" title="${msgFull ? 'POS ke tabs par wapis' : 'Poori screen'}" onclick="toggleMsgFull()" style="width:auto;padding:0 12px;font-size:13px;border-radius:18px;">${msgFull ? '⬅ POS' : '⛶'}</button>
             </div>
@@ -3673,6 +3742,7 @@
         <div class="msg-pane">${pane}</div>
       </div>`;
       fitMsgWrap();
+      setTimeout(autoLoadMedia, 60);
       const fl = document.getElementById('msg-flow');
       if (fl) {
         if (msgForceBottom || flowWasBottom) fl.scrollTop = fl.scrollHeight; else fl.scrollTop = flowTop;
@@ -3725,8 +3795,9 @@
       setDoc(doc(db, "restaurants/karachi-noor/orders", id), patch, { merge: true });
 
     onSnapshot(collection(db, "restaurants/karachi-noor/orders"), snap => {
+      const prevMap = new Map((appData.orders || []).map(o => [o.id, o]));
       appData.orders = snap.docs.map(d => normalizeOrder(d.id, d.data()));
-      try { newOrderAlert(snap.docChanges()); } catch (e) { console.warn(e); }
+      try { riderReplyAlerts(snap.docChanges(), prevMap); } catch (e) { console.warn(e); }
       onOrdersChanged(snap.docChanges());
       localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
       if (document.getElementById('view-dashboard').style.display !== 'none') renderDashboard();
@@ -3795,6 +3866,26 @@
       } catch (e) { console.warn('sound', e); }
       if (window.onInboxChats) window.onInboxChats();
     }, e => console.warn('Inbox load failed (Firestore rules check karein):', e));
+
+    // AI bot ka bada switch: restaurants/karachi-noor/settings/inbox_bot { enabled: true/false }
+    const INBOX_BOT_PATH = "restaurants/karachi-noor/settings/inbox_bot";
+    onSnapshot(doc(db, INBOX_BOT_PATH), snap => {
+      window._inboxBotOn = !!(snap.exists() && snap.data().enabled === true);
+      try { renderMessages(true); } catch (e) {}
+    }, e => console.warn('Bot switch load failed (Firestore rules check karein):', e));
+    window.toggleInboxBot = async () => {
+      const turnOn = !window._inboxBotOn;
+      const msg = turnOn
+        ? 'AI bot ON karein? Is number ke har customer ke text message ka jawab AI dega (is par Meta ka charge lagta hai).'
+        : 'AI bot OFF karein? Phir sirf staff jawab dega.';
+      if (!confirm(msg)) return;
+      try {
+        await setDoc(doc(db, INBOX_BOT_PATH), { enabled: turnOn }, { merge: true });
+        if (typeof uiToast === 'function') uiToast(turnOn ? '🤖 Bot ON ho gaya' : '🤖 Bot OFF ho gaya');
+      } catch (e) {
+        alert('Switch nahi badla: ' + e.message + '\n(Firestore rules mein settings likhne ki ijazat chahiye)');
+      }
+    };
 
     let inboxUnsub = null;
     window.deleteInboxMsgDoc = (phone, docId) => deleteDoc(doc(db, INBOX_PATH + "/" + phone + "/messages", docId));
