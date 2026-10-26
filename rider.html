@@ -156,6 +156,7 @@ const app = initializeApp({
 });
 const db = getFirestore(app);
 const BASE = "restaurants/karachi-noor";
+  const fmtT = o => { const t = o.createdAt || o.ts || o.time || o.date || o.created || o.createdMs || o.timestamp || o.placedAt || o.dispatchedAt || o.riderAssignedAt; if (!t) return ''; try { const d = t.toDate ? t.toDate() : new Date(t); if (isNaN(d)) return String(t); return d.toLocaleDateString('en-GB') + ' ' + d.toLocaleTimeString([], {hour:'numeric', minute:'2-digit'}); } catch (e) { return ''; } };
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
@@ -348,6 +349,7 @@ function listenOrders() {
       const map = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(addr + ' ' + (o.area || ''));
       return `<div class="order">
         <div class="o1"><span class="onum">${esc(o.num || o.orderNumber || o.id)}</span><span class="oamt">PKR ${esc(amount)}</span></div>
+        <div class="oaddr">🕒 ${esc(fmtT(o))}</div>
         <div class="ocust">👤 ${esc(o.name || o.customerName || 'Customer')}</div>
         <div class="oaddr">📍 ${esc(addr)} ${esc(o.area || '')}</div>
         <div class="acts">
