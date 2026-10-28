@@ -3833,7 +3833,7 @@
   <!-- Firebase Firestore connection (customer orders cloud mein save honge) -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, doc, setDoc, getDoc, deleteDoc, collection, onSnapshot, serverTimestamp, query, orderBy, limit }
+    import { getFirestore, doc, setDoc, getDoc, deleteDoc, collection, onSnapshot, serverTimestamp, query, orderBy, limit , getDocs, where}
       from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -3849,9 +3849,19 @@
     const db = getFirestore(fbApp);
 
     // Order ko restaurants/karachi-noor/orders/{orderId} mein save karta hai
-    window.saveOrderToFirestore = (order) =>
-      setDoc(doc(db, "restaurants/karachi-noor/orders", order.id),
-        { ...order, createdAt: serverTimestamp() });
+window.saveOrderToFirestore = async (order) => {
+  let riderId = null;
+  let status = order.status || "new";
+  try {
+    const snap = await getDocs(query(collection(db, "restaurants/karachi-noor/riders"), where("online", "==", true)));
+    if (!snap.empty) {
+      riderId = snap.docs[0].id;
+      status = "dispatched";
+    }
+  } catch (e) { console.error("Rider chunne mein masla:", e); }
+  return setDoc(doc(db, "restaurants/karachi-noor/orders", order.id),
+    { ...order, riderId, status, createdAt: serverTimestamp() });
+};
 
     // Riders (registry + live location): restaurants/karachi-noor/riders/{phone}
     window.saveRiderToFirestore = (id, data) => setDoc(doc(db, "restaurants/karachi-noor/riders", id), data, { merge: true });
