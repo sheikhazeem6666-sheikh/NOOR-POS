@@ -166,6 +166,7 @@ function showErr(m){ const e=$('loginErr'); e.textContent=m; e.classList.toggle(
 function setStatus(on){
   $('stBadge').className = 'pill ' + (on ? 'on' : 'off');
   $('stText').textContent = on ? 'ONLINE' : 'OFFLINE';
+  if(me){ setDoc(doc(db, BASE + "/riders", me.id), { online: on, onlineAt: serverTimestamp() }, { merge: true }).catch(e=>showErr('Online save nahi hua: ' + e.message)); }
 }
 
 window.doLogin = async function () {
