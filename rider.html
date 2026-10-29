@@ -347,10 +347,13 @@ function listenOrders() {
       const phone = o.phone || o.customerPhone || o.from || '';
       const addr = o.addr || o.address || '';
       const amount = Number(o.amount ?? o.total ?? o.totalAmount ?? 0).toLocaleString();
+      const raw = o.items || o.cart || o.orderItems || [];
+const itemsTxt = Array.isArray(raw) ? raw.map(i => typeof i === 'string' ? esc(i) : esc((i.name || i.title || 'item') + ((i.qty || i.quantity) ? ' x' + (i.qty || i.quantity) : ''))).join(', ') : esc(String(raw));
       const map = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(addr + ' ' + (o.area || ''));
       return `<div class="order">
         <div class="o1"><span class="onum">${esc(o.num || o.orderNumber || o.id)}</span><span class="oamt">PKR ${esc(amount)}</span></div>
         <div class="oaddr">🕒 ${esc(fmtT(o))}</div>
+        <div class="oaddr">🛒 ${itemsTxt}</div>
         <div class="ocust">👤 ${esc(o.name || o.customerName || 'Customer')}</div>
         <div class="oaddr">📍 ${esc(addr)} ${esc(o.area || '')}</div>
         <div class="acts">
