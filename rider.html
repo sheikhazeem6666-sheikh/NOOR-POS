@@ -349,7 +349,7 @@ function listenOrders() {
       const amount = Number(o.amount ?? o.total ?? o.totalAmount ?? 0).toLocaleString();
       const raw = o.items || o.cart || o.orderItems || [];
 const itemsTxt = Array.isArray(raw) ? raw.map(i => typeof i === 'string' ? esc(i) : esc((i.name || i.title || 'item') + ((i.qty || i.quantity) ? ' x' + (i.qty || i.quantity) : ''))).join(', ') : esc(String(raw));
-      const payTxt = esc(String(o.paymentMethod || o.payment || o.paymentType || 'Cash on Delivery'));
+      const payTxt = esc(String(o.paymentMethod || o.payment || o.paymentType || 'Cash on Delivery')) + ((o.paid === true || o.isPaid === true || String(o.paymentStatus || '').toLowerCase() === 'paid') ? ' ✅ Paid' : ' ⏳ Unpaid');
       const map = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(addr + ' ' + (o.area || ''));
       return `<div class="order">
         <div class="o1"><span class="onum">${esc(o.num || o.orderNumber || o.id)}</span><span class="oamt">PKR ${esc(amount)}</span></div>
